@@ -2,12 +2,13 @@ import React from 'react';
 import { FaStar } from 'react-icons/fa';
 
 const GigCard = ({ gig }) => {
+ 
   return (
-    <div className="rounded-lg shadow-lg hover:shadow-md transition-all duration-300 overflow-hidden h-[400px] flex flex-col">
+    <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
       {/* Image Container - Fixed Height */}
       <div className="h-48 relative">
         <img
-          src={gig.image}
+          src={`http://localhost:8000/${gig.gigImage}`}
           alt={gig.title}
           className="w-full h-full object-cover"
         />
@@ -15,18 +16,22 @@ const GigCard = ({ gig }) => {
           <span className="text-white font-medium">{gig.category}</span>
         </div>
       </div>
-      
-      {/* Content Container - Flex Grow */}
-      <div className="p-4 flex-grow flex flex-col">
+
+      {/* Content */}
+      <div className="p-4 flex flex-col h-[calc(100%-12rem)]">
+        <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2">
+          {gig.title}
+        </h3>
+
         {/* User Info */}
         <div className="flex items-center gap-3 mb-3">
           <img
-            src={gig.user.avatar}
-            alt={gig.user.name}
+            src={`http://localhost:8000/${gig.user.profile_picture}`}
+            alt={gig.user.user.username}
             className="w-10 h-10 rounded-full"
           />
           <div>
-            <h4 className="text-sm font-medium text-gray-900">{gig.user.name}</h4>
+            <h4 className="text-sm font-medium text-gray-900">{gig.user.user.username}</h4>
             <div className="flex items-center text-sm">
               <FaStar className="text-yellow-400 mr-1" />
               <span className="text-gray-600">{gig.user.rating}</span>
@@ -34,20 +39,17 @@ const GigCard = ({ gig }) => {
           </div>
         </div>
 
-        {/* Title */}
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 line-clamp-2">
-          {gig.title}
-        </h3>
+       
 
-        {/* Skills Exchange - Push to Bottom */}
+        {/* Skills */}
         <div className="mt-auto space-y-2">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-blue-600">Offering:</span>
-            <span className="text-sm text-gray-600">{gig.offering[0]}</span>
+            <span className="text-sm text-gray-600">{gig.offeredSkills.name}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-green-600">Looking for:</span>
-            <span className="text-sm text-gray-600">{gig.lookingFor[0]}</span>
+            <span className="text-sm text-gray-600">{gig.desiredSkills.name}</span>
           </div>
         </div>
       </div>

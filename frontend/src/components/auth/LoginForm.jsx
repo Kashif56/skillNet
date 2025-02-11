@@ -1,14 +1,23 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { FaEnvelope, FaLock, FaGoogle } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
+import authService from '../../services/auth';
+import { login, setLoading, setError, clearError } from '../../redux/slices/authSlice';
 
 const LoginForm = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     rememberMe: false
   });
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -18,10 +27,67 @@ const LoginForm = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login data:', formData);
+    dispatch(setLoading(true));
+    dispatch(clearError());
+
+    try {
+      // Call login API
+      const loginResponse = await authService.login({
+        email: formData.email.trim(),
+        password: formData.password
+      });
+
+      console.log('Login response:', loginResponse);
+
+      if (!loginResponse.token || !loginResponse.user) {
+        throw new Error('Invalid login response from server');
+      }
+
+      // Update Redux store with user data
+      dispatch(login({
+        user: loginResponse.user,
+        username: loginResponse.username,
+        token: loginResponse.token,
+        refreshToken: loginResponse.refreshToken
+      }));
+
+      toast.success('Welcome back to SkillNet!');
+      
+      // Redirect to dashboard
+      navigate('/dashboard');
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      let errorMessage = 'Failed to login. Please try again.';
+      
+      if (error.response?.data) {
+        // Handle dj-rest-auth error format
+        if (error.response.data.non_field_errors) {
+          errorMessage = error.response.data.non_field_errors[0];
+        } else if (error.response.data.detail) {
+          errorMessage = error.response.data.detail;
+        } else if (typeof error.response.data === 'object') {
+          // Get first error from any field
+          const firstField = Object.keys(error.response.data)[0];
+          if (Array.isArray(error.response.data[firstField])) {
+            errorMessage = `${firstField}: ${error.response.data[firstField][0]}`;
+          }
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      dispatch(setError(errorMessage));
+      toast.error(errorMessage);
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    toast.info('Google sign in will be available soon!');
   };
 
   return (
@@ -102,14 +168,18 @@ const LoginForm = () => {
         {/* Submit Button */}
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          disabled={isLoading}
+          className={`w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+            isLoading ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
-          Sign in
+          {isLoading ? 'Signing in...' : 'Sign in'}
         </button>
 
         {/* Google Sign In */}
         <button
           type="button"
+          onClick={handleGoogleLogin}
           className="w-full bg-white text-gray-700 border border-gray-300 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
         >
           <FaGoogle className="text-red-500" />

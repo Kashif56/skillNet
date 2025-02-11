@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import GigCard from '../../components/gigs/GigCard';
 import Filters from '../../components/gigs/Filters';
+import { getAllGigs } from '../../services/core';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -10,39 +11,41 @@ const GigsListing = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('relevance');
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
+  const [gigs, setGigs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Get search query from URL
   const searchQuery = searchParams.get('search') || '';
 
-  // Mock data - replace with actual API call
-  const gigs = Array.from({ length: 85 }, (_, index) => ({
-    id: index + 1,
-    title: `Gig ${index + 1}: ${["JavaScript & React", "UI/UX Design", "Content Writing", "Digital Marketing"][index % 4]}`,
-    category: ["Programming", "Design", "Writing", "Marketing"][index % 4],
-    price: Math.floor(Math.random() * 200),
-    rating: (4 + Math.random()).toFixed(1),
-    image: [
-      "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&auto=format&fit=crop&q=60",
-      "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=800&auto=format&fit=crop&q=60",
-      "https://images.unsplash.com/photo-1596524430615-b46475ddff6e?w=800&auto=format&fit=crop&q=60"
-    ][index % 3],
-    offering: [`Skill ${index + 1}`],
-    lookingFor: [`Need ${index + 1}`],
-    user: {
-      name: `User ${index + 1}`,
-      avatar: `https://ui-avatars.com/api/?name=User+${index + 1}&background=0D8ABC&color=fff`,
-      rating: (4 + Math.random()).toFixed(1)
-    }
-  }));
+  // Fetch gigs from backend
+  useEffect(() => {
+    const fetchGigs = async () => {
+      try {
+        setLoading(true);
+        const response = await getAllGigs();
+        setGigs(response);
+        setError(null);
+      } catch (err) {
+        setError('Failed to load gigs. Please try again later.');
+        console.error('Error fetching gigs:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGigs();
+  }, []); // Empty dependency array means this runs once on component mount
 
   // Filter gigs based on search query and category
   const filteredGigs = gigs.filter(gig => {
     const matchesSearch = !searchQuery || 
       gig.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      gig.offering.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      gig.lookingFor.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()));
+      gig.offeredSkills?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      gig.desiredSkills?.name?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCategory = selectedCategory === 'all' || gig.category.toLowerCase() === selectedCategory.toLowerCase();
+    const matchesCategory = selectedCategory === 'all' || 
+      gig.offeredSkills?.category?.name?.toLowerCase() === selectedCategory.toLowerCase();
 
     return matchesSearch && matchesCategory;
   });
@@ -153,12 +156,27 @@ const GigsListing = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {filteredGigs.length > 0 ? (
+        {loading ? (
+          <div className="text-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading gigs...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-16 bg-white rounded-lg shadow-sm">
+            <h3 className="text-lg font-medium text-red-600 mb-2">{error}</h3>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : filteredGigs.length > 0 ? (
           <>
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {currentGigs.map((gig) => (
-                <Link key={gig.id} to={`/gigs/${gig.id}`} className="transform hover:scale-[1.02] transition-transform">
+                <Link key={gig.gigId} to={`/gigs/${gig.gigId}`} className="transform hover:scale-[1.02] transition-transform">
                   <GigCard gig={gig} />
                 </Link>
               ))}

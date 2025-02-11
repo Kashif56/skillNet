@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FaHome, FaMusic, FaUserCircle, FaInfoCircle, FaEnvelope, FaSearch } from 'react-icons/fa';
 import Footer from './Footer'; // Assuming Footer component is in the same directory
+import { useSelector } from 'react-redux';
 
 const Layout = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const isActive = (path) => location.pathname === path;
-  
-  // Mock auth state - replace with actual auth logic
-  const [isLoggedIn] = useState(false);
+ 
+
+  const accessToken = localStorage.getItem('token');
+  const username = localStorage.getItem('username');
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -92,12 +94,13 @@ const Layout = ({ children }) => {
 
               {/* Auth Section */}
               <div className="ml-4 flex items-center">
-                {isLoggedIn ? (
+                {accessToken ? (
                   <Link
                     to="/profile"
                     className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50"
                   >
-                    <FaUserCircle className="h-6 w-6" />
+                    <FaUserCircle className="h-6 w-6" /> 
+                    Hey, {username}
                   </Link>
                 ) : (
                   <Link

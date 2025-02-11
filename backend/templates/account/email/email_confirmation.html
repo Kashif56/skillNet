@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Email Verification</h2>
+    {% if confirmation %}
+        <p>Thank you for verifying your email address. Your email has been confirmed.</p>
+        <p>You can now <a href="http://localhost:5173/login">login to your account</a>.</p>
+    {% else %}
+        <p>The verification link is invalid or has expired.</p>
+    {% endif %}
+</div>
+{% endblock %}

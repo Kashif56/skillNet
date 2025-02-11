@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
 import { FaBell, FaSignOutAlt, FaCog, FaChevronDown, FaUser } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../../redux/slices/authSlice';
 
 const DashboardNavbar = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  const { isAuthenticated, userData, token, username } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const [notifications] = useState([
     {
       id: 1,
@@ -46,14 +54,14 @@ const DashboardNavbar = () => {
           {/* Right Side Icons */}
           <div className="flex items-center space-x-4">
             {/* Quick Actions */}
-            <div className="flex items-center space-x-2">
+            {/* <div className="flex items-center space-x-2">
               <button className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
                 Find Mentors
               </button>
               <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 Create Session
               </button>
-            </div>
+            </div> */}
 
             {/* Notifications */}
             <div className="relative">
@@ -111,17 +119,18 @@ const DashboardNavbar = () => {
             </div>
 
             {/* Profile Menu */}
-            <div className="relative">
+            { isAuthenticated && token && (
+              <div className="relative">
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                  <span className="text-sm font-medium text-blue-600">JD</span>
+                  <span className="text-sm font-medium text-blue-600">{username.charAt(0)}</span>
                 </div>
                 <div className="hidden md:block text-left">
-                  <div className="text-sm font-medium text-gray-700">John Doe</div>
-                  <div className="text-xs text-gray-500">Level 12 Mentor</div>
+                  <div className="text-sm font-medium text-gray-700">{username}</div>
+                 
                 </div>
                 <FaChevronDown className="w-4 h-4 text-gray-500" />
               </button>
@@ -150,6 +159,8 @@ const DashboardNavbar = () => {
                 )}
               </AnimatePresence>
             </div>
+            ) }
+            
           </div>
         </div>
       </div>

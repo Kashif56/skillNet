@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaBars, FaTimes, FaUserCircle, FaSearch } from 'react-icons/fa';
+import {useSelector} from 'react-redux';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
