@@ -11,8 +11,7 @@ const Layout = ({ children }) => {
   const isActive = (path) => location.pathname === path;
  
 
-  const accessToken = localStorage.getItem('token');
-  const username = localStorage.getItem('username');
+  const {token, username, isAuthenticated} = useSelector((state) => state.auth);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -94,12 +93,12 @@ const Layout = ({ children }) => {
 
               {/* Auth Section */}
               <div className="ml-4 flex items-center">
-                {accessToken ? (
+                {token ? (
                   <Link
                     to="/profile"
-                    className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+                    className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium text-blue-600 hover:bg-blue-50"
                   >
-                    <FaUserCircle className="h-6 w-6" /> 
+                    <FaUserCircle className="h-6 w-6 mr-2" /> 
                     Hey, {username}
                   </Link>
                 ) : (

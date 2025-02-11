@@ -16,8 +16,10 @@ class Gig(models.Model):
     description = models.TextField()
     gigImage = models.ImageField(upload_to='gig_images/', blank=True, null=True)
    
-    offeredSkills = models.ForeignKey('core.Skill', on_delete=models.CASCADE, related_name='offered_in_gigs')
-    desiredSkills = models.ForeignKey('core.Skill', on_delete=models.CASCADE, related_name='desired_in_gigs')
+    offeredSkills = models.CharField(max_length=200,null=True, blank=True)
+    desiredSkills = models.CharField(max_length=200, null=True, blank=True)
+
+    tags = models.JSONField(blank=True, null=True)
     
     
     isActive = models.BooleanField(default=True)

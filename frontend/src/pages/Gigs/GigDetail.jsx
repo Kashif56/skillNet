@@ -138,15 +138,8 @@ const GigDetail = () => {
               <div className="bg-white rounded-lg p-6 shadow-sm">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">What I'm Offering</h2>
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-blue-600">{gig.offeredSkills?.name}</h3>
-                  <p className="text-gray-600">{gig.offeredSkills?.description}</p>
-                  {gig.offeredSkills?.category && (
-                    <div className="flex flex-wrap gap-4">
-                      <div className="bg-blue-50 px-3 py-1 rounded-full">
-                        <span className="text-sm text-blue-600">Category: {gig.offeredSkills.category.name}</span>
-                      </div>
-                    </div>
-                  )}
+                  <h3 className="text-lg font-medium text-blue-600">{gig.offeredSkills}</h3>
+                 
                 </div>
               </div>
 
@@ -154,15 +147,8 @@ const GigDetail = () => {
               <div className="bg-white rounded-lg p-6 shadow-sm">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">What I Need</h2>
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-green-600">{gig.desiredSkills?.name}</h3>
-                  <p className="text-gray-600">{gig.desiredSkills?.description}</p>
-                  {gig.desiredSkills?.category && (
-                    <div className="flex flex-wrap gap-4">
-                      <div className="bg-green-50 px-3 py-1 rounded-full">
-                        <span className="text-sm text-green-600">Category: {gig.desiredSkills.category.name}</span>
-                      </div>
-                    </div>
-                  )}
+                  <h3 className="text-lg font-medium text-green-600">{gig.desiredSkills}</h3>
+                 
                 </div>
               </div>
             </div>

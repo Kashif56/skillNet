@@ -13,9 +13,9 @@ class SwapRequestSerializer(serializers.ModelSerializer):
 class GigSerializer(serializers.ModelSerializer):
     # Explicitly include nested serializers
     user = UserProfileSerializer()
-    offeredSkills = SkillSerializer()  # Single skill, not many=True
-    desiredSkills = SkillSerializer()  # Single skill, not many=True
+   
     
     class Meta:
+        depth = 1
         model = Gig
         fields = "__all__"

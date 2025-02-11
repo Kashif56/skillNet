@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaInfoCircle, FaBook, FaImage, FaExclamationCircle } from 'react-icons/fa';
+import {toast} from 'react-toastify';
 
 import BasicInfo from '../../components/gigs/create/BasicInfo';
 import DetailedDescription from '../../components/gigs/create/DetailedDescription';
 import MediaPreview from '../../components/gigs/create/MediaPreview';
+
+import { createGig } from '../../services/gigs';
 
 const steps = [
   {
@@ -41,6 +44,7 @@ const CHAR_LIMITS = {
 const CreateGig = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState(() => {
     // Try to load from localStorage
     const savedData = localStorage.getItem('gigFormData');
@@ -167,13 +171,30 @@ const CreateGig = () => {
   const handleSubmit = async () => {
     if (validateStep()) {
       try {
-        // Your submit logic here
-        console.log('Form submitted:', formData);
-        // Clear localStorage after successful submission
-        localStorage.removeItem('gigFormData');
-        navigate('/dashboard/gigs');
+        setLoading(true);
+        const data = {
+          title: formData.title,
+          description: formData.description,
+          image: formData.image,
+          offering: formData.offering,
+          lookingFor: formData.lookingFor,
+          tags: formData.tags
+        };
+
+        console.log('Submitting with data:', data); // Debug log
+        
+        const response = await createGig(data);
+        if (response.status === 'success') {
+          toast.success('Gig created successfully!');
+          console.log('Form submitted:', formData);
+          localStorage.removeItem('gigFormData');
+          navigate(`/dashboard/gigs/${response.data.gigId}`);
+        }
       } catch (error) {
         console.error('Error submitting form:', error);
+        toast.error('Failed to create gig');
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -335,7 +356,7 @@ const CreateGig = () => {
             onClick={currentStep === steps.length ? handleSubmit : handleNext}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            {currentStep === steps.length ? 'Publish Gig' : 'Next'}
+            {loading ? 'Creating...' : currentStep === steps.length ? 'Create Gig' : 'Next'}
           </button>
         </div>
       </div>

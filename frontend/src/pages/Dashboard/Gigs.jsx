@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaSearch, FaEllipsisV, FaTrash, FaPlus } from 'react-icons/fa';
+import { FaSearch, FaEllipsisV, FaTrash, FaPlus, FaSpinner } from 'react-icons/fa';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { getAllGigs, getGigDetail } from '../../services/gigs';
+import { Link } from 'react-router-dom';
+
 
 const GigStatus = {
   ACTIVE: 'ACTIVE',
@@ -20,55 +23,32 @@ const Gigs = () => {
   const [timeFilter, setTimeFilter] = useState('LAST 30 DAYS');
   const [selectedGigs, setSelectedGigs] = useState([]);
   const [filteredGigs, setFilteredGigs] = useState([]);
-  
-  // Temporary mock data
-  const [gigs] = useState([
-    {
-      id: 1,
-      title: 'be your react or jquery frontend web developer and do frontend development',
-      impressions: 132,
-      clicks: 2,
-      orders: 0,
-      cancellations: '0 %',
-      status: GigStatus.ACTIVE,
-      thumbnail: 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
-      offering: 'React Development',
-      lookingFor: 'UI/UX Design'
-    },
-    {
-      id: 2,
-      title: 'develop custom website, business website development as full stack web',
-      impressions: 138,
-      clicks: 6,
-      orders: 0,
-      cancellations: '0 %',
-      status: GigStatus.ACTIVE,
-      thumbnail: 'https://images.unsplash.com/photo-1596495577886-d920f1fb7238?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
-      offering: 'Full Stack Development',
-      lookingFor: 'Digital Marketing'
-    },
-    {
-      id: 3,
-      title: 'be your backend web developer and do website development in python django',
-      impressions: 170,
-      clicks: 4,
-      orders: 0,
-      cancellations: '0 %',
-      status: GigStatus.ACTIVE,
-      thumbnail: 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
-      offering: 'Django Development',
-      lookingFor: 'Frontend Development'
-    }
-  ]);
+  const [gigs, setGigs] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const statusTabs = [
     { status: GigStatus.ACTIVE, count: filteredGigs.filter(g => g.status === GigStatus.ACTIVE).length },
-    { status: GigStatus.PENDING_APPROVAL, count: 0 },
-    { status: GigStatus.REQUIRES_MODIFICATION, count: 0 },
-    { status: GigStatus.DRAFT, count: 0 },
-    { status: GigStatus.DENIED, count: 0 },
     { status: GigStatus.PAUSED, count: 0 }
   ];
+
+  const fetchGigs = async () => {
+    try {
+      setLoading(true);
+      const response = await getAllGigs();
+      if(response.status === 'success') {
+        console.log(response.data);
+        setGigs(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching gigs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchGigs();
+  }, []);
 
   useEffect(() => {
     const searchQuery = searchParams.get('search');
@@ -107,10 +87,16 @@ const Gigs = () => {
     console.log('Deleting gigs:', selectedGigs);
   };
 
-  const displayGigs = filteredGigs.filter(gig => gig.status === activeTab);
+  const displayGigs = filteredGigs
 
   return (
-    <div className="p-6">
+    <>
+    {loading ? (
+      <div className="flex justify-center items-center h-screen">
+        <FaSpinner className="animate-spin" />
+      </div>
+    ) : (
+      <div className="p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
@@ -127,7 +113,7 @@ const Gigs = () => {
             </div>
             <button
               onClick={() => navigate('/dashboard/gigs/create')}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 cursor-pointer" 
             >
               <FaPlus size={16} />
               <span>CREATE A NEW GIG</span>
@@ -224,6 +210,7 @@ const Gigs = () => {
                 </th>
               </tr>
             </thead>
+            
             <tbody className="bg-white divide-y divide-gray-200">
               {displayGigs.map((gig) => (
                 <tr key={gig.id} className="hover:bg-gray-50">
@@ -235,35 +222,38 @@ const Gigs = () => {
                       onChange={() => handleSelectGig(gig.id)}
                     />
                   </td>
+                  <Link to={`/dashboard/gigs/${gig.gigId}`}>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
-                      <img className="h-10 w-10 rounded-lg object-cover" src={gig.thumbnail} alt="" />
+                      <img className="h-10 w-10 rounded-lg object-cover" src={`http://localhost:8000/${gig.gigImage}`} alt="" />
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900 line-clamp-1 mb-1">{gig.title}</div>
                         <div className="flex space-x-4 text-xs">
                           <div>
                             <span className="text-blue-600 font-medium">Offering:</span>
-                            <span className="text-gray-500 ml-1">{gig.offering}</span>
+                            <span className="text-gray-500 ml-1">{gig.offeredSkills}</span>
                           </div>
                           <div>
                             <span className="text-green-600 font-medium">Looking for:</span>
-                            <span className="text-gray-500 ml-1">{gig.lookingFor}</span>
+                            <span className="text-gray-500 ml-1">{gig.desiredSkills}</span>
                           </div>
                         </div>
                       </div>
                     </div>
                   </td>
+                  </Link>
+
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {gig.impressions}
+                    0
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {gig.clicks}
+                    0
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {gig.orders}
+                    0
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {gig.cancellations}
+                    0
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button className="text-gray-400 hover:text-gray-500">
@@ -277,6 +267,9 @@ const Gigs = () => {
         </div>
       </div>
     </div>
+    )}
+    
+    </>
   );
 };
 

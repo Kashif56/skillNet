@@ -1,5 +1,8 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import {logout} from '../redux/slices/authSlice';
+
+import { useDispatch } from 'react-redux';
 
 const API_URL = 'http://localhost:8000/api/auth';
 
@@ -143,17 +146,12 @@ const authService = {
   // Login user
   login: async (credentials) => {
     try {
-      console.log('Attempting login with:', { 
-        email: credentials.email,
-        // Don't log password for security
-      });
 
       const response = await authApi.post('/login/', {
         email: credentials.email,
         password: credentials.password
       });
-      
-      console.log('Login response:', response.data);
+   
 
       // Validate response data
       if (!response.data.access && !response.data.user) {
@@ -168,11 +166,7 @@ const authService = {
         username: response.data.user.username
       };
 
-      // Store tokens
-      localStorage.setItem('token', authData.token);
-      localStorage.setItem('refreshToken', authData.refreshToken);
-      localStorage.setItem('username', authData.username);
-      localStorage.setItem('isAuthenticated', 'true');
+    
 
       // Start token refresh interval
       authService.startTokenRefreshInterval();
@@ -199,9 +193,8 @@ const authService = {
       if (window.tokenRefreshInterval) {
         clearInterval(window.tokenRefreshInterval);
       }
-
-      // Attempt to logout on server
       await authApi.post('/logout/');
+      dispatch(logout());
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -212,26 +205,7 @@ const authService = {
     }
   },
 
-  // Get user profile
-  getProfile: async () => {
-    try {
-      const response = await authApi.get('/user/profile/');
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || { detail: 'Failed to fetch profile' };
-    }
-  },
-
-  // Update user profile
-  updateProfile: async (data) => {
-    try {
-      const response = await authApi.patch('/user/profile/', data);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || { detail: 'Failed to update profile' };
-    }
-  },
-
+ 
   // Refresh token
   refreshToken: async () => {
     try {

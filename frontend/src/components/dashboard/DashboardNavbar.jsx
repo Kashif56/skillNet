@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { FaBell, FaSignOutAlt, FaCog, FaChevronDown, FaUser } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
+import authService from '../../services/auth';
+
 
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice';
@@ -10,9 +12,15 @@ const DashboardNavbar = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-  const { isAuthenticated, userData, token, username } = useSelector((state) => state.auth);
+  const { isAuthenticated, userData, token, username, refreshToken } = useSelector((state) => state.auth);
+  console.log('DashboardNavbar:', { isAuthenticated, userData, token, username, refreshToken });
+  
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+
+
+  const[loading, setLoading] = useState(false);
 
   const [notifications] = useState([
     {
@@ -40,6 +48,14 @@ const DashboardNavbar = () => {
       unread: false
     }
   ]);
+
+
+  const handleLogout = () => {
+    setLoading(true);
+    authService.logout();
+    setLoading(false);
+
+  };
 
   return (
     <nav className="bg-white border-b border-gray-200 h-16 fixed w-full z-30 top-0">
@@ -151,9 +167,11 @@ const DashboardNavbar = () => {
                       <FaCog className="w-4 h-4 mr-3" />
                       Settings
                     </Link>
-                    <button className="w-full flex items-center px-4 py-2 text-red-600 hover:bg-gray-50">
+                    <button className="w-full flex items-center px-4 py-2 text-red-600 hover:bg-gray-50"
+                      onClick={handleLogout}
+                    >
                       <FaSignOutAlt className="w-4 h-4 mr-3" />
-                      Sign Out
+                      {loading ? 'Logging out...' : 'Logout'}
                     </button>
                   </motion.div>
                 )}
