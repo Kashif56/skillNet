@@ -6,92 +6,74 @@ from django.db.models.functions import Coalesce
 from .models import Message
 from userProfile.models import UserProfile
 from .serializers import MessageSerializer
+from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_chat_history(request, username):
     try:
-        # Get the UserProfile objects for both users
-        current_user = UserProfile.objects.get(user=request.user)
-        other_user = UserProfile.objects.get(user__username=username)
+        # Get both users
+        other_user = get_object_or_404(User, username=username)
+        current_user_profile = UserProfile.objects.get(user=request.user)
+        other_user_profile = UserProfile.objects.get(user=other_user)
 
-        # Query messages between the two users
+        # Get messages between these users
         messages = Message.objects.filter(
-            Q(sender=current_user, receiver=other_user) |
-            Q(sender=other_user, receiver=current_user)
+            (Q(sender=current_user_profile) & Q(receiver=other_user_profile)) |
+            (Q(sender=other_user_profile) & Q(receiver=current_user_profile))
         ).order_by('createdAt')
 
-        # Serialize the messages
-        serializer = MessageSerializer(messages, many=True)
-        
-        # Transform the data to include sender username
-        chat_messages = []
-        for msg in serializer.data:
-            chat_messages.append({
-                'id': msg['id'],
-                'message': msg['content'],
-                'sender': msg['sender']['user']['username'],
-                'createdAt': msg['createdAt']
+        # Format messages
+        message_list = []
+        for msg in messages:
+            message_list.append({
+                'id': msg.id,
+                'message': msg.content,
+                'sender': msg.sender.user.username,
+                'receiver': msg.receiver.user.username,
+                'createdAt': msg.createdAt.isoformat()
             })
 
-        return Response(chat_messages)
+        return Response(message_list)
 
-    except UserProfile.DoesNotExist:
-        return Response({"error": "User not found"}, status=404)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=404)
     except Exception as e:
         print(f"Error in get_chat_history: {str(e)}")
-        return Response({"error": str(e)}, status=500)
+        return Response({'error': 'Failed to fetch chat history'}, status=500)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_conversations(request):
     try:
-        current_user = UserProfile.objects.get(user=request.user)
+        current_user_profile = UserProfile.objects.get(user=request.user)
         
-        # Get latest message for each conversation
-        latest_messages = Message.objects.filter(
-            Q(sender=current_user) | Q(receiver=current_user)
-        ).values(
-            'sender', 'receiver'
-        ).annotate(
-            last_message_time=Max('createdAt')
-        ).order_by('-last_message_time')
+        # Get all messages where current user is either sender or receiver
+        messages = Message.objects.filter(
+            Q(sender=current_user_profile) | Q(receiver=current_user_profile)
+        ).order_by('-createdAt')
 
-        # Format the response
-        chat_list = []
-        seen_users = set()  # To track unique conversations
+        # Get unique conversations
+        conversations = set()
+        conversation_list = []
 
-        for msg in latest_messages:
-            other_user = None
-            if msg['sender'] == current_user.id:
-                other_user = UserProfile.objects.get(id=msg['receiver'])
-            else:
-                other_user = UserProfile.objects.get(id=msg['sender'])
+        for msg in messages:
+            other_profile = msg.receiver if msg.sender == current_user_profile else msg.sender
             
-            # Skip if we've already added this user
-            if other_user.user.username in seen_users:
-                continue
-            
-            seen_users.add(other_user.user.username)
-            
-            # Get the actual last message
-            last_message = Message.objects.filter(
-                Q(sender=current_user, receiver=other_user) |
-                Q(sender=other_user, receiver=current_user)
-            ).order_by('-createdAt').first()
-
-            if last_message:
-                chat_list.append({
-                    'username': other_user.user.username,
-                    'firstName': other_user.user.first_name,
-                    'lastName': other_user.user.last_name,
-                    'lastMessage': last_message.content,
-                    'lastMessageTime': last_message.createdAt.isoformat(),
-                    'profilePicture': other_user.profile_picture.url if other_user.profile_picture else None,
+            if other_profile.user.username not in conversations:
+                conversations.add(other_profile.user.username)
+                conversation_list.append({
+                    'username': other_profile.user.username,
+                    'firstName': other_profile.user.first_name,
+                    'lastName': other_profile.user.last_name,
+                    'profilePicture': other_profile.profile_picture.url if other_profile.profile_picture else None,
+                    'lastMessage': msg.content,
+                    'lastMessageTime': msg.createdAt.isoformat()
                 })
 
-        return Response(chat_list)
+        return Response(conversation_list)
 
     except Exception as e:
         print(f"Error in get_conversations: {str(e)}")
-        return Response([], status=200)  # Return empty array instead of error
+        return Response({'error': 'Failed to fetch conversations'}, status=500)

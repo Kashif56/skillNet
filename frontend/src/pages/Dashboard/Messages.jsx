@@ -110,7 +110,10 @@ const ChatWindow = ({ username }) => {
 
     return () => {
       if (wsRef.current) {
-        wsRef.current.close();
+        console.log('Cleaning up WebSocket connection');
+        const ws = wsRef.current;
+        wsRef.current = null; // Prevent reconnection attempts
+        ws.close();
       }
     };
   }, [username, user, token]);
@@ -149,12 +152,19 @@ const ChatWindow = ({ username }) => {
     
     if (wsRef.current) {
       wsRef.current.close();
+      wsRef.current = null;
     }
 
     const ws = new WebSocket(wsUrl);
+    let reconnectTimeout;
 
     ws.onopen = () => {
       console.log('WebSocket Connected');
+      // Clear any existing reconnect timeout
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+        reconnectTimeout = null;
+      }
     };
 
     ws.onmessage = (event) => {
@@ -172,9 +182,19 @@ const ChatWindow = ({ username }) => {
       toast.error('Connection error. Messages might not be real-time.');
     };
 
-    ws.onclose = () => {
-      console.log('WebSocket Disconnected');
-      setTimeout(setupWebSocket, 3000);
+    ws.onclose = (e) => {
+      console.log('WebSocket Disconnected. Code:', e.code, 'Reason:', e.reason);
+      
+      // Only try to reconnect if the component is still mounted and we haven't started a new connection
+      if (wsRef.current === ws) {
+        // Wait for 3 seconds before trying to reconnect
+        reconnectTimeout = setTimeout(() => {
+          if (wsRef.current === ws) {
+            console.log('Attempting to reconnect...');
+            setupWebSocket();
+          }
+        }, 3000);
+      }
     };
 
     wsRef.current = ws;
@@ -214,12 +234,10 @@ const ChatWindow = ({ username }) => {
       <div className="bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center space-x-4">
           <img
-            src={`/media/profile_pictures/${username}.jpg`}
+            src='https://thelightcommittee.com/wp-content/uploads/elementor/thumbs/women-linkedin-headshot-los-angeles-1-q71sclhob153lpmbqr2eydwgqhf7girral69pesikw.jpg'
             alt="Profile"
             className="w-10 h-10 rounded-full object-cover"
-            onError={(e) => {
-              e.target.src = 'https://via.placeholder.com/40';
-            }}
+           
           />
           <div>
             <h2 className="text-lg font-semibold text-gray-900">{username}</h2>
