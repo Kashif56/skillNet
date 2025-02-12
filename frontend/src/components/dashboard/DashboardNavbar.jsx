@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { FaBell, FaSignOutAlt, FaCog, FaChevronDown, FaUser } from 'react-icons/fa';
+import { FaBell, FaSignOutAlt, FaCog, FaChevronDown, FaUser, FaInbox } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../../services/auth';
-
 
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice';
@@ -17,8 +16,6 @@ const DashboardNavbar = () => {
   
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-
 
   const[loading, setLoading] = useState(false);
 
@@ -48,7 +45,6 @@ const DashboardNavbar = () => {
       unread: false
     }
   ]);
-
 
   const handleLogout = () => {
     setLoading(true);
@@ -132,6 +128,13 @@ const DashboardNavbar = () => {
                   </motion.div>
                 )}
               </AnimatePresence>
+            </div>
+
+            {/* Messages */}
+            <div className="relative">
+              <Link to="/dashboard/conversations" className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
+                <FaInbox className="text-gray-600 w-5 h-5" />
+              </Link>
             </div>
 
             {/* Profile Menu */}

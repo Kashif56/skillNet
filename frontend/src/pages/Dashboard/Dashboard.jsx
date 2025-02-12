@@ -23,6 +23,8 @@ import CreateGig from './CreateGig';
 import GigDetail from './GigDetail';
 import EditGig from './EditGig';
 import SwapRequests from './SwapRequests';
+import Conversations from './Conversations';
+import Chat from './Chat';
 
 const DashboardHome = () => {
   const stats = [
@@ -168,8 +170,6 @@ const Dashboard = () => {
           <Routes>
             <Route index element={<DashboardHome />} />
             <Route path="schedule" element={<Schedule />} />
-            <Route path="messages" element={<Messages />} />
-            <Route path="messages/:username" element={<Messages />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="leaderboards" element={<Leaderboards />} />
             <Route path="profile" element={<Profile />} />
@@ -179,6 +179,8 @@ const Dashboard = () => {
             <Route path="gigs/:gigId" element={<GigDetail />} />
             <Route path="gigs/:gigId/edit" element={<EditGig />} />
             <Route path="swap-requests" element={<SwapRequests />} />
+            <Route path="conversations/" element={<Conversations />} />
+            <Route path="chat/:username" element={<Chat />} />
           </Routes>
         </div>
       </div>

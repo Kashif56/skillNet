@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaPaperPlane, FaSpinner } from 'react-icons/fa';
-import { format } from 'date-fns';
+import { FaPaperPlane, FaSpinner, FaArrowLeft } from 'react-icons/fa';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import DashboardLayout from '../../components/Layout/DashboardLayout';
+import { format } from 'date-fns';
 
-const ChatList = ({ onSelectChat }) => {
+const ConversationList = ({ onSelectChat, activeChat }) => {
   const { token } = useSelector((state) => state.auth);
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +25,6 @@ const ChatList = ({ onSelectChat }) => {
           'Authorization': `Bearer ${token}`
         }
       });
-      console.log('Conversations response:', response.data);
       if (Array.isArray(response.data)) {
         setConversations(response.data);
       } else {
@@ -42,18 +42,18 @@ const ChatList = ({ onSelectChat }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-full">
         <FaSpinner className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     );
   }
 
   return (
-    <div className="h-screen bg-white">
+    <div className="h-full bg-white">
       <div className="p-4 border-b border-gray-200">
         <h2 className="text-xl font-semibold text-gray-800">Messages</h2>
       </div>
-      <div className="overflow-y-auto">
+      <div className="overflow-y-auto h-[calc(100%-4rem)]">
         {!Array.isArray(conversations) || conversations.length === 0 ? (
           <div className="p-4 text-center text-gray-500">
             No conversations yet
@@ -63,13 +63,18 @@ const ChatList = ({ onSelectChat }) => {
             <div
               key={chat.username}
               onClick={() => onSelectChat(chat.username)}
-              className="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+              className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
+                activeChat === chat.username ? 'bg-blue-50' : ''
+              }`}
             >
               <div className="flex items-center space-x-3">
                 <img
-                  src={`http://localhost:8000/${chat.profilePicture}`}
+                  src={chat.profilePicture ? `http://localhost:8000${chat.profilePicture}` : 'https://via.placeholder.com/40'}
                   alt={chat.username}
                   className="w-12 h-12 rounded-full object-cover"
+                  onError={(e) => {
+                    e.target.src = 'https://via.placeholder.com/40';
+                  }}
                 />
                 <div className="flex-1">
                   <h3 className="font-medium text-gray-900">
@@ -97,6 +102,7 @@ const ChatWindow = ({ username }) => {
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
   const wsRef = useRef(null);
+  const navigate = useNavigate();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -112,7 +118,7 @@ const ChatWindow = ({ username }) => {
       if (wsRef.current) {
         console.log('Cleaning up WebSocket connection');
         const ws = wsRef.current;
-        wsRef.current = null; // Prevent reconnection attempts
+        wsRef.current = null;
         ws.close();
       }
     };
@@ -160,7 +166,6 @@ const ChatWindow = ({ username }) => {
 
     ws.onopen = () => {
       console.log('WebSocket Connected');
-      // Clear any existing reconnect timeout
       if (reconnectTimeout) {
         clearTimeout(reconnectTimeout);
         reconnectTimeout = null;
@@ -185,9 +190,7 @@ const ChatWindow = ({ username }) => {
     ws.onclose = (e) => {
       console.log('WebSocket Disconnected. Code:', e.code, 'Reason:', e.reason);
       
-      // Only try to reconnect if the component is still mounted and we haven't started a new connection
       if (wsRef.current === ws) {
-        // Wait for 3 seconds before trying to reconnect
         reconnectTimeout = setTimeout(() => {
           if (wsRef.current === ws) {
             console.log('Attempting to reconnect...');
@@ -222,22 +225,27 @@ const ChatWindow = ({ username }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-full">
         <FaSpinner className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-full bg-gray-50">
       {/* Chat Header */}
       <div className="bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center space-x-4">
+          <button
+            onClick={() => navigate('/dashboard/conversations')}
+            className="md:hidden p-2 hover:bg-gray-100 rounded-full"
+          >
+            <FaArrowLeft className="w-5 h-5 text-gray-600" />
+          </button>
           <img
             src='https://thelightcommittee.com/wp-content/uploads/elementor/thumbs/women-linkedin-headshot-los-angeles-1-q71sclhob153lpmbqr2eydwgqhf7girral69pesikw.jpg'
             alt="Profile"
             className="w-10 h-10 rounded-full object-cover"
-           
           />
           <div>
             <h2 className="text-lg font-semibold text-gray-900">{username}</h2>
@@ -302,19 +310,26 @@ const ChatWindow = ({ username }) => {
   );
 };
 
-const Messages = () => {
+const Chat = () => {
   const { username } = useParams();
   const navigate = useNavigate();
 
-  const handleSelectChat = (username) => {
-    navigate(`/dashboard/messages/${username}`);
+  const handleSelectChat = (newUsername) => {
+    navigate(`/dashboard/chat/${newUsername}`);
   };
 
-  if (!username) {
-    return <ChatList onSelectChat={handleSelectChat} />;
-  }
-
-  return <ChatWindow username={username} />;
+  return (
+   
+      <div className="flex h-[calc(100vh-64px)]">
+        <div className="hidden md:block w-1/3 border-r border-gray-200">
+          <ConversationList onSelectChat={handleSelectChat} activeChat={username} />
+        </div>
+        <div className="w-full md:w-2/3">
+          <ChatWindow username={username} />
+        </div>
+      </div>
+   
+  );
 };
 
-export default Messages;
+export default Chat;

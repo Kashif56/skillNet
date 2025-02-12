@@ -9,6 +9,8 @@ import GigsListing from './pages/Gigs/GigsListing';
 import GigDetail from './pages/Gigs/GigDetail';
 import { AuthRoute, PrivateRoute } from './components/auth/ProtectedRoute';
 import { useSelector } from 'react-redux';
+import Conversations from './pages/Dashboard/Conversations';
+import Chat from './pages/Dashboard/Chat';
 
 function App() {
   const { isAuthenticated } = useSelector((state) => state.auth);
@@ -40,14 +42,9 @@ function App() {
         />
         
         {/* Protected routes - redirect to login if not authenticated */}
-        <Route
-          path="/dashboard/*"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        />
+        <Route path="/dashboard/*" element={<PrivateRoute><Dashboard /></PrivateRoute>}>
+         
+        </Route>
 
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -22,7 +22,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
   const menuItems = [
     { name: 'Dashboard', path: '/dashboard', icon: FaHome },
     { name: 'Profile', path: '/dashboard/profile', icon: FaUser },
-    { name: 'Messages', path: '/dashboard/messages', icon: FaInbox },
+    { name: 'Messages', path: '/dashboard/conversations', icon: FaInbox },
     { name: 'Schedule', path: '/dashboard/schedule', icon: FaCalendar },
     { name: 'Gigs', path: '/dashboard/gigs', icon: FaBriefcase },
     { name: 'Swap Requests', path: '/dashboard/swap-requests', icon: FaExchangeAlt },
