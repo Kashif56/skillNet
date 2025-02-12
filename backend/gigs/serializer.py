@@ -1,9 +1,6 @@
 from rest_framework import serializers
 from .models import Gig, SwapRequest
 from userProfile.serializers import UserProfileSerializer
-from core.serializer import SkillSerializer
-from chats.serializer import MessageAttachmentSerializer
-from chats.models import MessageAttachment
 
 
 

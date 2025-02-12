@@ -169,6 +169,7 @@ const Dashboard = () => {
             <Route index element={<DashboardHome />} />
             <Route path="schedule" element={<Schedule />} />
             <Route path="messages" element={<Messages />} />
+            <Route path="messages/:username" element={<Messages />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="leaderboards" element={<Leaderboards />} />
             <Route path="profile" element={<Profile />} />

@@ -1,190 +1,302 @@
-import React, { useState } from 'react';
-import { FaPaperPlane, FaSmile, FaPaperclip } from 'react-icons/fa';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
+import { useParams, useNavigate } from 'react-router-dom';
+import { FaPaperPlane, FaSpinner } from 'react-icons/fa';
+import { format } from 'date-fns';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
-const Messages = () => {
-  const [selectedChat, setSelectedChat] = useState(null);
-  const [message, setMessage] = useState('');
+const ChatList = ({ onSelectChat }) => {
+  const { token } = useSelector((state) => state.auth);
+  const [conversations, setConversations] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const chats = [
-    {
-      id: 1,
-      user: {
-        name: 'Sarah Wilson',
-        avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-        status: 'online'
-      },
-      lastMessage: 'Looking forward to our React session!',
-      time: '2m ago',
-      unread: 2
-    },
-    {
-      id: 2,
-      user: {
-        name: 'Mike Johnson',
-        avatar: 'https://randomuser.me/api/portraits/men/86.jpg',
-        status: 'offline'
-      },
-      lastMessage: 'Thanks for the Python tips!',
-      time: '1h ago',
-      unread: 0
+  useEffect(() => {
+    fetchConversations();
+  }, [token]);
+
+  const fetchConversations = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('http://localhost:8000/api/chats/conversations/', {
+        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      console.log('Conversations response:', response.data);
+      if (Array.isArray(response.data)) {
+        setConversations(response.data);
+      } else {
+        console.error('Received non-array data:', response.data);
+        setConversations([]);
+      }
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+      toast.error('Failed to load conversations');
+      setConversations([]);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const messages = [
-    {
-      id: 1,
-      sender: 'Sarah Wilson',
-      content: "Hi! I saw your profile and I'm interested in learning React.",
-      time: '10:30 AM',
-      isSender: false
-    },
-    {
-      id: 2,
-      sender: 'You',
-      content: "Hello Sarah! That's great. I'd be happy to help. What's your current experience level with JavaScript?",
-      time: '10:32 AM',
-      isSender: true
-    },
-    {
-      id: 3,
-      sender: 'Sarah Wilson',
-      content: "I have basic knowledge of JavaScript and HTML/CSS. I've built a few simple websites.",
-      time: '10:35 AM',
-      isSender: false
-    }
-  ];
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <FaSpinner className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex h-screen pt-2 bg-gray-50">
-      {/* Chat List */}
-      <div className="w-80 border-r border-gray-200 bg-white">
-        <div className="p-4">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Messages</h2>
-          <div className="space-y-2">
-            {chats.map((chat) => (
-              <motion.div
-                key={chat.id}
-                whileHover={{ x: 5 }}
-                onClick={() => setSelectedChat(chat)}
-                className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                  selectedChat?.id === chat.id ? 'bg-blue-50' : 'hover:bg-gray-50'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="relative">
-                    <img
-                      src={chat.user.avatar}
-                      alt={chat.user.name}
-                      className="w-12 h-12 rounded-full"
-                    />
-                    <span
-                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
-                        chat.user.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
-                      }`}
-                    ></span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline">
-                      <h3 className="text-sm font-medium text-gray-900 truncate">
-                        {chat.user.name}
-                      </h3>
-                      <span className="text-xs text-gray-500">{chat.time}</span>
-                    </div>
-                    <p className="text-sm text-gray-500 truncate">{chat.lastMessage}</p>
-                  </div>
-                  {chat.unread > 0 && (
-                    <span className="w-5 h-5 bg-blue-600 text-white rounded-full text-xs flex items-center justify-center">
-                      {chat.unread}
-                    </span>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+    <div className="h-screen bg-white">
+      <div className="p-4 border-b border-gray-200">
+        <h2 className="text-xl font-semibold text-gray-800">Messages</h2>
       </div>
-
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col bg-white">
-        {selectedChat ? (
-          <>
-            {/* Chat Header */}
-            <div className="p-4 border-b border-gray-200">
+      <div className="overflow-y-auto">
+        {!Array.isArray(conversations) || conversations.length === 0 ? (
+          <div className="p-4 text-center text-gray-500">
+            No conversations yet
+          </div>
+        ) : (
+          conversations.map((chat) => (
+            <div
+              key={chat.username}
+              onClick={() => onSelectChat(chat.username)}
+              className="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+            >
               <div className="flex items-center space-x-3">
                 <img
-                  src={selectedChat.user.avatar}
-                  alt={selectedChat.user.name}
-                  className="w-10 h-10 rounded-full"
+                  src={`http://localhost:8000/${chat.profilePicture}`}
+                  alt={chat.username}
+                  className="w-12 h-12 rounded-full object-cover"
                 />
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">
-                    {selectedChat.user.name}
+                <div className="flex-1">
+                  <h3 className="font-medium text-gray-900">
+                    {chat.firstName} {chat.lastName}
                   </h3>
-                  <p className="text-sm text-gray-500">
-                    {selectedChat.user.status === 'online' ? 'Online' : 'Offline'}
-                  </p>
+                  <p className="text-sm text-gray-500 truncate">{chat.lastMessage}</p>
                 </div>
+                <span className="text-xs text-gray-400">
+                  {chat.lastMessageTime ? format(new Date(chat.lastMessageTime), 'MMM d, h:mm a') : ''}
+                </span>
               </div>
             </div>
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex ${msg.isSender ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-xs md:max-w-md rounded-lg p-3 ${
-                      msg.isSender
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    <p className="text-sm">{msg.content}</p>
-                    <p
-                      className={`text-xs mt-1 ${
-                        msg.isSender ? 'text-blue-100' : 'text-gray-500'
-                      }`}
-                    >
-                      {msg.time}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Message Input */}
-            <div className="p-4 border-t border-gray-200">
-              <div className="flex items-center space-x-2">
-                <button className="p-2 text-gray-500 hover:text-gray-600">
-                  <FaSmile className="w-5 h-5" />
-                </button>
-                <button className="p-2 text-gray-500 hover:text-gray-600">
-                  <FaPaperclip className="w-5 h-5" />
-                </button>
-                <input
-                  type="text"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Type a message..."
-                  className="flex-1 p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button className="p-2 text-blue-600 hover:text-blue-700">
-                  <FaPaperPlane className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <p className="text-gray-500">Select a chat to start messaging</p>
-          </div>
+          ))
         )}
       </div>
     </div>
   );
+};
+
+const ChatWindow = ({ username }) => {
+  const { user, token } = useSelector((state) => state.auth);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const messagesEndRef = useRef(null);
+  const wsRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    if (username && user && token) {
+      fetchChatHistory();
+      setupWebSocket();
+    }
+
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, [username, user, token]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const fetchChatHistory = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`http://localhost:8000/api/chats/chat-history/${username}/`, {
+        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (Array.isArray(response.data)) {
+        setMessages(response.data);
+      } else {
+        console.error('Received non-array data:', response.data);
+        setMessages([]);
+      }
+    } catch (error) {
+      console.error('Error fetching chat history:', error);
+      toast.error('Failed to load chat history');
+      setMessages([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setupWebSocket = () => {
+    const roomName = [user.username, username].sort().join('_');
+    const wsUrl = `ws://localhost:8000/ws/chat/${roomName}/?token=${token}`;
+    
+    if (wsRef.current) {
+      wsRef.current.close();
+    }
+
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      console.log('WebSocket Connected');
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.error) {
+        console.error('WebSocket message error:', data.error);
+        toast.error(data.error);
+      } else {
+        setMessages(prev => [...prev, data]);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      toast.error('Connection error. Messages might not be real-time.');
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket Disconnected');
+      setTimeout(setupWebSocket, 3000);
+    };
+
+    wsRef.current = ws;
+  };
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!newMessage.trim() || sending || !wsRef.current) return;
+
+    try {
+      setSending(true);
+      wsRef.current.send(JSON.stringify({
+        message: newMessage,
+        sender_id: user.id,
+        receiver_id: username
+      }));
+      setNewMessage('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.error('Failed to send message');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <FaSpinner className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-screen bg-gray-50">
+      {/* Chat Header */}
+      <div className="bg-white border-b border-gray-200 px-4 py-3">
+        <div className="flex items-center space-x-4">
+          <img
+            src={`/media/profile_pictures/${username}.jpg`}
+            alt="Profile"
+            className="w-10 h-10 rounded-full object-cover"
+            onError={(e) => {
+              e.target.src = 'https://via.placeholder.com/40';
+            }}
+          />
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">{username}</h2>
+            <p className="text-sm text-gray-500">Online</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Messages Container */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            className={`flex ${msg.sender === user.username ? 'justify-end' : 'justify-start'}`}
+          >
+            <div
+              className={`max-w-[70%] rounded-lg px-4 py-2 ${
+                msg.sender === user.username
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-900 border border-gray-200'
+              }`}
+            >
+              <p className="break-words">{msg.message}</p>
+              <span className="text-xs opacity-75 mt-1 block">
+                {new Date(msg.createdAt).toLocaleTimeString()}
+              </span>
+            </div>
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Message Input */}
+      <form onSubmit={handleSendMessage} className="bg-white border-t border-gray-200 p-4">
+        <div className="flex space-x-4">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type your message..."
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="submit"
+            disabled={!newMessage.trim() || sending}
+            className={`px-6 py-2 bg-blue-600 text-white rounded-lg flex items-center space-x-2 ${
+              !newMessage.trim() || sending
+                ? 'opacity-50 cursor-not-allowed'
+                : 'hover:bg-blue-700'
+            }`}
+          >
+            {sending ? (
+              <FaSpinner className="w-4 h-4 animate-spin" />
+            ) : (
+              <FaPaperPlane className="w-4 h-4" />
+            )}
+            <span>Send</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+const Messages = () => {
+  const { username } = useParams();
+  const navigate = useNavigate();
+
+  const handleSelectChat = (username) => {
+    navigate(`/dashboard/messages/${username}`);
+  };
+
+  if (!username) {
+    return <ChatList onSelectChat={handleSelectChat} />;
+  }
+
+  return <ChatWindow username={username} />;
 };
 
 export default Messages;

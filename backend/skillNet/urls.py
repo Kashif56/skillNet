@@ -47,6 +47,5 @@ urlpatterns = [
     path('api/profile/', include('userProfile.urls')),  
     path('api/gigs/', include('gigs.urls')),
     path('api/dashboard/', include('dashboard.urls')),
-    path('api/chats/', include('chats.urls'))
-    
+    path('api/chats/', include('chats.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

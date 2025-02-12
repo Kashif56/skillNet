@@ -11,9 +11,9 @@ class ThreadAdmin(admin.ModelAdmin):
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
-    list_display = ('sender', 'thread', 'is_read', 'created_at')
-    list_filter = ('is_read', 'created_at')
-    search_fields = ('content', 'sender__username')
+    list_display = ('sender', 'receiver', 'isRead', 'createdAt')
+    list_filter = ('isRead', 'createdAt')
+   
 
 @admin.register(MessageAttachment)
 class MessageAttachmentAdmin(admin.ModelAdmin):

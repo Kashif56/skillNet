@@ -225,7 +225,7 @@ const GigDetail = () => {
                 )}
 
                 <Link
-                  to={`/messages/${gig.user.username}`}
+                  to={`/dashboard/messages/${gig.user.username}`}
                   className="mt-3 w-full px-4 py-2 border border-gray-600 text-gray-900 rounded-md font-medium hover:border-blue-600 hover:text-blue-700 flex items-center justify-center"
                 >
                   <IoChatbubbleEllipsesOutline className="mr-2" />

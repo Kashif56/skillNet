@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne',
     'django.contrib.staticfiles',
     'django.contrib.sites',
     
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     'dj_rest_auth.registration',
     'corsheaders',
     'channels',
+   
     
     # Local apps
     'userProfile',
@@ -94,14 +96,30 @@ WSGI_APPLICATION = 'skillNet.wsgi.application'
 ASGI_APPLICATION = 'skillNet.asgi.application'
 
 # Channel Layers for WebSocket
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+try:
+    import redis
+    redis_client = redis.Redis(host="127.0.0.1", port=6379, socket_connect_timeout=1)
+    redis_client.ping()
+except:
+    print("Redis not available, falling back to in-memory channel layer")
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer"
+        }
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [("127.0.0.1", 6379)],
+                "capacity": 1500,
+                "expiry": 10,
+                "retry_on_timeout": True,
+                "symmetric_encryption_keys": [SECRET_KEY],
+            },
         },
-    },
-}
+    }
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -171,6 +189,25 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
 ]
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
