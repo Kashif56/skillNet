@@ -12,7 +12,6 @@ import StatCard from '../../components/dashboard/StatCard';
 import ActivityFeed from '../../components/dashboard/ActivityFeed';
 
 // Import Dashboard Pages
-import Messages from './Messages';
 import Schedule from './Schedule';
 import Profile from './Profile';
 import Analytics from './Analytics';

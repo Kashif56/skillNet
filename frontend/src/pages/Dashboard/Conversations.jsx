@@ -5,7 +5,6 @@ import { FaSpinner } from 'react-icons/fa';
 import { format } from 'date-fns';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import DashboardLayout from '../../components/Layout/DashboardLayout';
 
 const ConversationList = ({ onSelectChat }) => {
   const { token } = useSelector((state) => state.auth);

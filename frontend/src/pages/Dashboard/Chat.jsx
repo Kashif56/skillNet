@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FaPaperPlane, FaSpinner, FaArrowLeft } from 'react-icons/fa';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import DashboardLayout from '../../components/Layout/DashboardLayout';
+
 import { format } from 'date-fns';
 
 const ConversationList = ({ onSelectChat, activeChat }) => {
@@ -69,12 +69,9 @@ const ConversationList = ({ onSelectChat, activeChat }) => {
             >
               <div className="flex items-center space-x-3">
                 <img
-                  src={chat.profilePicture ? `http://localhost:8000${chat.profilePicture}` : 'https://via.placeholder.com/40'}
+                  src='https://thelightcommittee.com/wp-content/uploads/elementor/thumbs/women-linkedin-headshot-los-angeles-1-q71sclhob153lpmbqr2eydwgqhf7girral69pesikw.jpg'
                   alt={chat.username}
                   className="w-12 h-12 rounded-full object-cover"
-                  onError={(e) => {
-                    e.target.src = 'https://via.placeholder.com/40';
-                  }}
                 />
                 <div className="flex-1">
                   <h3 className="font-medium text-gray-900">
@@ -100,6 +97,7 @@ const ChatWindow = ({ username }) => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [chatUser, setChatUser] = useState(null);
   const messagesEndRef = useRef(null);
   const wsRef = useRef(null);
   const navigate = useNavigate();
@@ -112,6 +110,7 @@ const ChatWindow = ({ username }) => {
     if (username && user && token) {
       fetchChatHistory();
       setupWebSocket();
+      fetchConversationDetails();
     }
 
     return () => {
@@ -123,6 +122,26 @@ const ChatWindow = ({ username }) => {
       }
     };
   }, [username, user, token]);
+
+  const fetchConversationDetails = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/chats/conversations/', {
+        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (Array.isArray(response.data)) {
+        const currentChat = response.data.find(chat => chat.username === username);
+        if (currentChat) {
+          setChatUser(currentChat);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching conversation details:', error);
+      toast.error('Failed to load user details');
+    }
+  };
 
   useEffect(() => {
     scrollToBottom();
@@ -248,33 +267,45 @@ const ChatWindow = ({ username }) => {
             className="w-10 h-10 rounded-full object-cover"
           />
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">{username}</h2>
-            <p className="text-sm text-gray-500">Online</p>
+            <h2 className="text-lg font-semibold text-gray-900">
+              {chatUser ? `${chatUser.firstName} ${chatUser.lastName}` : username}
+            </h2>
+            <span className="text-sm font-normal text-gray-500">@{username}</span>
           </div>
         </div>
       </div>
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`flex ${msg.sender === user.username ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                msg.sender === user.username
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-900 border border-gray-200'
-              }`}
-            >
-              <p className="break-words">{msg.message}</p>
-              <span className="text-xs opacity-75 mt-1 block">
-                {new Date(msg.createdAt).toLocaleTimeString()}
-              </span>
+      <div className="flex-1 overflow-y-auto bg-white p-4">
+        <div className="space-y-4">
+          {messages.map((msg, index) => (
+            <div key={index}>
+              <div className={`flex items-end gap-2 ${msg.sender === user.username ? 'flex-row-reverse' : 'flex-row'}`}>
+                <img
+                  src='https://thelightcommittee.com/wp-content/uploads/elementor/thumbs/women-linkedin-headshot-los-angeles-1-q71sclhob153lpmbqr2eydwgqhf7girral69pesikw.jpg'
+                  alt={msg.sender === user.username ? 'Your profile' : 'Profile'}
+                  className="h-8 w-8 rounded-full object-cover flex-shrink-0"
+                />
+                <div className="flex flex-col">
+                  <div
+                    className={`px-4 py-2 max-w-sm ${
+                      msg.sender === user.username
+                        ? 'bg-[#0084ff] text-white rounded-l-2xl rounded-tr-2xl'
+                        : 'bg-[#f0f0f0] text-black rounded-r-2xl rounded-tl-2xl'
+                    }`}
+                  >
+                    <p className="text-[15px]">{msg.message}</p>
+                  </div>
+                  <span className={`text-xs text-gray-500 mt-1 ${
+                    msg.sender === user.username ? 'self-end' : 'self-start'
+                  }`}>
+                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
         <div ref={messagesEndRef} />
       </div>
 
