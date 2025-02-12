@@ -57,8 +57,8 @@ class SwapRequest(models.Model):
         ('cancelled', 'Cancelled'),
     )
 
-    requestor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='swap_requests_sent')
-    responder = models.ForeignKey(User, on_delete=models.CASCADE, related_name='swap_requests_received')
+    requestor = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='swap_requests_sent')
+    responder = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='swap_requests_received')
     gig = models.ForeignKey('gigs.Gig', on_delete=models.CASCADE, related_name='swap_requests')
     message = models.TextField(blank=True, null=True)
 
@@ -70,7 +70,7 @@ class SwapRequest(models.Model):
     updatedAt = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Swap request from {self.requestor.username} to {self.responder.username}"
+        return f"Swap request from {self.requestor.user.username} to {self.responder.user.username}"
     
 
     def generateSwapId(self):

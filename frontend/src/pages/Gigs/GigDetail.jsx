@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FaStar, FaUserCircle, FaCalendar, FaClock, FaMapMarkerAlt } from 'react-icons/fa';
+import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { getGigDetail, checkSwapRequest, sendSwapRequest } from '../../services/core';
+import SwapRequestModal from '../../components/gigs/SwapRequestModal';
+import { toast } from 'react-toastify';
 
 const GigDetail = () => {
   const { gigId } = useParams();
 
-  
   const [gig, setGig] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [swapRequestStatus, setSwapRequestStatus] = useState(null);
+  const [swapRequestStatus, setSwapRequestStatus] = useState();
   const [sendingRequest, setSendingRequest] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -28,13 +31,14 @@ const GigDetail = () => {
         
         setGig(response.data);
         
-        
-        
         // Only check swap request status if user is authenticated
         if (isAuthenticated) {
           try {
             const swapStatus = await checkSwapRequest(gigId);
-            setSwapRequestStatus(swapStatus);
+            if(swapStatus.status === 'success') {
+              setSwapRequestStatus(swapStatus.data);
+              
+            }
           } catch (err) {
             console.error('Error checking swap request status:', err);
             // Don't set main error state, just log the error
@@ -51,20 +55,24 @@ const GigDetail = () => {
     fetchGigDetails();
   }, [gigId, isAuthenticated]);
 
-  const handleSwapRequest = async () => {
+  const handleSwapRequest = async (formData) => {
     if (!isAuthenticated) {
-      // Redirect to login or show login modal
       alert('Please log in to send a swap request');
       return;
     }
 
     try {
       setSendingRequest(true);
-      await sendSwapRequest({ gigId });
-      setSwapRequestStatus({ hasRequested: true });
+      await sendSwapRequest({ 
+        gigId,
+        message: formData.message 
+      });
+      setSwapRequestStatus({ status: 'pending' });
+      toast.success('Swap request sent successfully! The gig owner will review your request.');
+      setIsModalOpen(false);
     } catch (err) {
       console.error('Error sending swap request:', err);
-      alert('Failed to send swap request. Please try again.');
+      toast.error('Failed to send swap request. Please try again.');
     } finally {
       setSendingRequest(false);
     }
@@ -162,12 +170,12 @@ const GigDetail = () => {
                 {gig.user?.profile_picture && (
                   <img
                     src={`http://localhost:8000/${gig.user.profile_picture}`}
-                    alt={gig.user?.user?.username || 'User'}
+                    alt={gig.user?.username || 'User'}
                     className="w-16 h-16 rounded-full"
                   />
                 )}
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900">{gig.user?.user?.username}</h3>
+                  <h3 className="text-lg font-medium text-gray-900">{gig.user?.username}</h3>
                   <div className="flex items-center">
                     <FaStar className="text-yellow-400 mr-1" />
                     <span className="text-sm text-gray-600">
@@ -185,7 +193,7 @@ const GigDetail = () => {
                 <div className="flex items-center">
                   <FaCalendar className="mr-2" />
                   <span>
-                    Member since {gig.user?.user?.date_joined ? new Date(gig.user.user.date_joined).toLocaleDateString() : 'N/A'}
+                    Member since {gig.user?.date_joined ? new Date(gig.user.date_joined).toLocaleDateString() : 'N/A'}
                   </span>
                 </div>
               </div>
@@ -195,26 +203,34 @@ const GigDetail = () => {
                 {!isAuthenticated ? (
                   <Link
                     to="/login"
-                    className="block w-full px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 text-center"
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 flex items-center justify-center"
                   >
                     Login to Send Request
                   </Link>
-                ) : swapRequestStatus?.hasRequested ? (
+                ) : swapRequestStatus && swapRequestStatus?.status === 'pending' ? (
                   <button
                     className="w-full px-4 py-2 bg-gray-100 text-gray-600 rounded-md font-medium cursor-not-allowed"
                     disabled
                   >
-                    Swap Request Sent
+                    Request Sent on {swapRequestStatus?.createdAt ? new Date(swapRequestStatus.createdAt).toLocaleDateString() : 'N/A'}
                   </button>
                 ) : (
                   <button
-                    onClick={handleSwapRequest}
+                    onClick={() => setIsModalOpen(true)}
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 flex items-center justify-center"
                     disabled={sendingRequest}
-                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {sendingRequest ? 'Sending Request...' : 'Send Swap Request'}
                   </button>
                 )}
+
+                <Link
+                  to={`/messages/${gig.user.username}`}
+                  className="mt-3 w-full px-4 py-2 border border-gray-600 text-gray-900 rounded-md font-medium hover:border-blue-600 hover:text-blue-700 flex items-center justify-center"
+                >
+                  <IoChatbubbleEllipsesOutline className="mr-2" />
+                  Chat with {gig.user?.username}
+                </Link>
               </div>
             </div>
 
@@ -237,6 +253,13 @@ const GigDetail = () => {
           </div>
         </div>
       </div>
+
+      <SwapRequestModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSwapRequest}
+        loading={sendingRequest}
+      />
     </div>
   );
 };

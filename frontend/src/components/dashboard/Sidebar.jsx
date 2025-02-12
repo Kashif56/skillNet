@@ -12,7 +12,8 @@ import {
   FaTrophy,
   FaChartLine,
   FaQuestionCircle,
-  FaBriefcase
+  FaBriefcase,
+  FaExchangeAlt
 } from 'react-icons/fa';
 
 const Sidebar = ({ isCollapsed, onToggle }) => {
@@ -24,6 +25,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
     { name: 'Messages', path: '/dashboard/messages', icon: FaInbox },
     { name: 'Schedule', path: '/dashboard/schedule', icon: FaCalendar },
     { name: 'Gigs', path: '/dashboard/gigs', icon: FaBriefcase },
+    { name: 'Swap Requests', path: '/dashboard/swap-requests', icon: FaExchangeAlt },
     { name: 'Settings', path: '/dashboard/settings', icon: FaCog },
     { name: 'Analytics', path: '/dashboard/analytics', icon: FaChartLine },
     { name: 'Leaderboards', path: '/dashboard/leaderboards', icon: FaTrophy },

@@ -22,6 +22,7 @@ import Gigs from './Gigs';
 import CreateGig from './CreateGig';
 import GigDetail from './GigDetail';
 import EditGig from './EditGig';
+import SwapRequests from './SwapRequests';
 
 const DashboardHome = () => {
   const stats = [
@@ -176,6 +177,7 @@ const Dashboard = () => {
             <Route path="gigs/create" element={<CreateGig />} />
             <Route path="gigs/:gigId" element={<GigDetail />} />
             <Route path="gigs/:gigId/edit" element={<EditGig />} />
+            <Route path="swap-requests" element={<SwapRequests />} />
           </Routes>
         </div>
       </div>

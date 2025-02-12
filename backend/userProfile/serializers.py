@@ -9,6 +9,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
     user_first_name = serializers.CharField(source='user.first_name', read_only=True)
     user_last_name = serializers.CharField(source='user.last_name', read_only=True)
     user_email = serializers.EmailField(source='user.email', read_only=True)
+    username = serializers.CharField(source='user.username', read_only=True)
+    date_joined = serializers.CharField(source='user.date_joined', read_only=True)
     
     phone = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     address = serializers.CharField(required=False, allow_blank=True, allow_null=True)
@@ -21,11 +23,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = [
-            'id', 'user', 'user_first_name', 'user_last_name', 'user_email',
+            'id', 'user', 'username', 'user_first_name', 'user_last_name', 'user_email',
             'phone', 'title', 'address', 'profile_picture', 'banner_image',
-            'bio', 'skills', 'rating', 'rating_count', 'createdAt', 'updatedAt'
+            'bio', 'skills', 'rating', 'rating_count', 'createdAt', 'updatedAt', 'date_joined'
         ]
-        read_only_fields = ('rating', 'rating_count', 'createdAt', 'updatedAt')
+        read_only_fields = ('rating', 'rating_count', 'createdAt', 'updatedAt', 'date_joined')
 
     def to_representation(self, instance):
         # Handle case where profile doesn't exist
@@ -33,9 +35,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             return {
                 'id': None,
                 'user': None,
-                'user_first_name': '',
-                'user_last_name': '',
-                'user_email': '',
+              
                 'phone': None,
                 'title': None,
                 'address': None,
@@ -46,7 +46,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
                 'rating': 0.0,
                 'rating_count': 0,
                 'createdAt': None,
-                'updatedAt': None
+                'updatedAt': None,
+                
             }
         
         # Get the base representation

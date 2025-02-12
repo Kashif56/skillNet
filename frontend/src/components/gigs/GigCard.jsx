@@ -27,11 +27,11 @@ const GigCard = ({ gig }) => {
         <div className="flex items-center gap-3 mb-3">
           <img
             src={`http://localhost:8000/${gig.user.profile_picture}`}
-            alt={gig.user.user.username}
+            alt={gig.user.username}
             className="w-10 h-10 rounded-full"
           />
           <div>
-            <h4 className="text-sm font-medium text-gray-900">{gig.user.user.username}</h4>
+            <h4 className="text-sm font-medium text-gray-900">{gig.user.username}</h4>
             <div className="flex items-center text-sm">
               <FaStar className="text-yellow-400 mr-1" />
               <span className="text-gray-600">{gig.user.rating}</span>
@@ -45,11 +45,11 @@ const GigCard = ({ gig }) => {
         <div className="mt-auto space-y-2">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-blue-600">Offering:</span>
-            <span className="text-sm text-gray-600">{gig.offeredSkills.name}</span>
+            <span className="text-sm text-gray-600">{gig.offeredSkills}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-green-600">Looking for:</span>
-            <span className="text-sm text-gray-600">{gig.desiredSkills.name}</span>
+            <span className="text-sm text-gray-600">{gig.desiredSkills}</span>
           </div>
         </div>
       </div>

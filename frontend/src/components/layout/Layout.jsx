@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FaHome, FaMusic, FaUserCircle, FaInfoCircle, FaEnvelope, FaSearch } from 'react-icons/fa';
 import Footer from './Footer'; // Assuming Footer component is in the same directory
 import { useSelector } from 'react-redux';
+import authService from '../../services/auth';
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -19,6 +20,11 @@ const Layout = ({ children }) => {
       navigate(`/gigs?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
     }
+  };
+
+  const handleLogout = (e) => {
+    e.preventDefault();
+    authService.logout();
   };
 
   return (
@@ -94,13 +100,16 @@ const Layout = ({ children }) => {
               {/* Auth Section */}
               <div className="ml-4 flex items-center">
                 {token ? (
-                  <Link
-                    to="/profile"
-                    className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium text-blue-600 hover:bg-blue-50"
-                  >
-                    <FaUserCircle className="h-6 w-6 mr-2" /> 
-                    Hey, {username}
-                  </Link>
+                  <div className='inline-flex items-center px-3 py-2 rounded-md text-sm'>
+                    <Link
+                      to="/dashboard/profile"
+                      className="inline-flex items-center px-3 py-2 rounded-md text-blue-700 font-medium underline"
+                    >
+                      <FaUserCircle className="h-6 w-6 mr-2" /> 
+                      Hey, {username}
+                    </Link>
+                    <button className='inline-flex items-center px-3 py-2 rounded-md text-red-600 font-medium border border-red-600 hover:bg-red-400 hover:text-white cursor-pointer px-4' onClick={handleLogout}>Logout</button>
+                  </div>
                 ) : (
                   <Link
                     to="/login"
