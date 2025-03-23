@@ -119,7 +119,7 @@ const GigDetail = () => {
               <div className="relative pb-[56.25%]">
                 {gig.gigImage && (
                   <img
-                    src={`http://localhost:8000/${gig.gigImage}`}
+                    src={`http://localhost:8000${gig.gigImage}`}
                     alt={gig.title}
                     className="absolute inset-0 w-full h-full object-cover"
                   />
@@ -169,7 +169,7 @@ const GigDetail = () => {
               <div className="flex items-center space-x-4 mb-4">
                 {gig.user?.profile_picture && (
                   <img
-                    src={`http://localhost:8000/${gig.user.profile_picture}`}
+                    src={`http://localhost:8000${gig.user.profile_picture}`}
                     alt={gig.user?.username || 'User'}
                     className="w-16 h-16 rounded-full"
                   />
@@ -225,7 +225,7 @@ const GigDetail = () => {
                 )}
 
                 <Link
-                  to={`/dashboard/messages/${gig.user.username}`}
+                  to={`/dashboard/chat/${gig.user.username}`}
                   className="mt-3 w-full px-4 py-2 border border-gray-600 text-gray-900 rounded-md font-medium hover:border-blue-600 hover:text-blue-700 flex items-center justify-center"
                 >
                   <IoChatbubbleEllipsesOutline className="mr-2" />

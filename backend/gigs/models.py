@@ -20,7 +20,10 @@ class Gig(models.Model):
     desiredSkills = models.CharField(max_length=200, null=True, blank=True)
 
     tags = models.JSONField(blank=True, null=True)
-    
+
+    impressions = models.IntegerField(default=0)
+    clicks = models.IntegerField(default=0)
+    swaps = models.IntegerField(default=0)
     
     isActive = models.BooleanField(default=True)
     createdAt = models.DateTimeField(auto_now_add=True)

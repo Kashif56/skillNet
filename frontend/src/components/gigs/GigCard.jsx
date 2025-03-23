@@ -1,14 +1,17 @@
 import React from 'react';
 import { FaStar } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
 
 const GigCard = ({ gig }) => {
+  const { user,username } = useSelector((state) => state.auth);
  
+  if (gig.user.username !== username) {
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
       {/* Image Container - Fixed Height */}
       <div className="h-48 relative">
         <img
-          src={`http://localhost:8000/${gig.gigImage}`}
+          src={`http://localhost:8000${gig.gigImage}`}
           alt={gig.title}
           className="w-full h-full object-cover"
         />
@@ -26,7 +29,7 @@ const GigCard = ({ gig }) => {
         {/* User Info */}
         <div className="flex items-center gap-3 mb-3">
           <img
-            src={`http://localhost:8000/${gig.user.profile_picture}`}
+            src={`http://localhost:8000${gig.user.profile_picture}`}
             alt={gig.user.username}
             className="w-10 h-10 rounded-full"
           />
@@ -53,8 +56,8 @@ const GigCard = ({ gig }) => {
           </div>
         </div>
       </div>
-    </div>
-  );
+      </div>
+  );}
 };
 
 export default GigCard;

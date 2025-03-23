@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaSearch, FaEllipsisV, FaTrash, FaPlus, FaSpinner } from 'react-icons/fa';
+import { FaSearch, FaEllipsisV, FaTrash, FaPlus, FaSpinner, FaEye, FaMousePointer, FaExchangeAlt } from 'react-icons/fa';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getAllGigs, getGigDetail } from '../../services/gigs';
 import { Link } from 'react-router-dom';
@@ -93,7 +93,7 @@ const Gigs = () => {
     <>
     {loading ? (
       <div className="flex justify-center items-center h-screen">
-        <FaSpinner className="animate-spin" />
+        <FaSpinner className="animate-spin text-blue-600 text-2xl" />
       </div>
     ) : (
       <div className="p-6">
@@ -102,15 +102,7 @@ const Gigs = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Gigs</h1>
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600">Accepting Custom Orders</span>
-              <button 
-                onClick={() => setAcceptingOrders(!acceptingOrders)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${acceptingOrders ? 'bg-green-500' : 'bg-gray-200'}`}
-              >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${acceptingOrders ? 'translate-x-6' : 'translate-x-1'}`} />
-              </button>
-            </div>
+         
             <button
               onClick={() => navigate('/dashboard/gigs/create')}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 cursor-pointer" 
@@ -194,16 +186,22 @@ const Gigs = () => {
                   GIG
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  IMPRESSIONS
+                  <div className="flex items-center">
+                    <FaEye className="mr-1 text-gray-400" />
+                    IMPRESSIONS
+                  </div>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  CLICKS
+                  <div className="flex items-center">
+                    <FaMousePointer className="mr-1 text-gray-400" />
+                    CLICKS
+                  </div>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ORDERS
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  CANCELLATIONS
+                  <div className="flex items-center">
+                    <FaExchangeAlt className="mr-1 text-gray-400" />
+                    SWAPS
+                  </div>
                 </th>
                 <th scope="col" className="relative px-6 py-3">
                   <span className="sr-only">Actions</span>
@@ -212,56 +210,89 @@ const Gigs = () => {
             </thead>
             
             <tbody className="bg-white divide-y divide-gray-200">
-              {displayGigs.map((gig) => (
-                <tr key={gig.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <input 
-                      type="checkbox" 
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      checked={selectedGigs.includes(gig.id)}
-                      onChange={() => handleSelectGig(gig.id)}
-                    />
-                  </td>
-                  <Link to={`/dashboard/gigs/${gig.gigId}`}>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      <img className="h-10 w-10 rounded-lg object-cover" src={`http://localhost:8000/${gig.gigImage}`} alt="" />
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900 line-clamp-1 mb-1">{gig.title}</div>
-                        <div className="flex space-x-4 text-xs">
-                          <div>
-                            <span className="text-blue-600 font-medium">Offering:</span>
-                            <span className="text-gray-500 ml-1">{gig.offeredSkills}</span>
-                          </div>
-                          <div>
-                            <span className="text-green-600 font-medium">Looking for:</span>
-                            <span className="text-gray-500 ml-1">{gig.desiredSkills}</span>
+              {displayGigs.length > 0 ? (
+                displayGigs.map((gig) => (
+                  <tr key={gig.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input 
+                        type="checkbox" 
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        checked={selectedGigs.includes(gig.id)}
+                        onChange={() => handleSelectGig(gig.id)}
+                      />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Link to={`/dashboard/gigs/${gig.gigId}`} className="block">
+                        <div className="flex items-center">
+                          <img className="h-10 w-10 rounded-lg object-cover" src={`http://localhost:8000${gig.gigImage}`} alt="" />
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900 line-clamp-1 mb-1">{gig.title}</div>
+                            <div className="flex space-x-4 text-xs">
+                              <div>
+                                <span className="text-blue-600 font-medium">Offering:</span>
+                                <span className="text-gray-500 ml-1">{gig.offeredSkills}</span>
+                              </div>
+                              <div>
+                                <span className="text-green-600 font-medium">Looking for:</span>
+                                <span className="text-gray-500 ml-1">{gig.desiredSkills}</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
+                      </Link>
+                    </td>
+
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <span className="text-lg font-semibold text-gray-700">{gig.impressions || 0}</span>
+                        <span className="text-xs text-gray-500">Impressions</span>
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <span className="text-lg font-semibold text-gray-700">{gig.clicks || 0}</span>
+                        <span className="text-xs text-gray-500">Clicks</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <span className="text-lg font-semibold text-gray-700">{gig.swaps || 0}</span>
+                        <span className="text-xs text-gray-500">Swaps</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end space-x-3">
+                        <Link 
+                          to={`/dashboard/gigs/${gig.gigId}/edit`}
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                          </svg>
+                        </Link>
+                        <button className="p-1.5 text-gray-400 hover:bg-gray-50 rounded-full transition-colors">
+                          <FaEllipsisV className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center">
+                      <FaPlus className="text-gray-300 mb-3 text-3xl" />
+                      <p className="text-gray-500 mb-2">No gigs found</p>
+                      <button 
+                        onClick={() => navigate('/dashboard/gigs/create')}
+                        className="mt-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Create Your First Gig
+                      </button>
                     </div>
                   </td>
-                  </Link>
-
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    0
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    0
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    0
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    0
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button className="text-gray-400 hover:text-gray-500">
-                      <FaEllipsisV />
-                    </button>
-                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

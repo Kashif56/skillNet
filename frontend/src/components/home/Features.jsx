@@ -59,25 +59,25 @@ const Features = () => {
   ];
 
   return (
-    <section className="px-40 py-10 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+    <section className="py-12 md:py-16 px-4 md:px-8 lg:px-16 bg-white">
+      <div className="container mx-auto">
+        <div className="text-center max-w-3xl mx-auto mb-12 md:mb-16">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
             Powerful Features for Better Learning
           </h2>
-          <p className="text-gray-600 text-lg">
+          <p className="text-base md:text-lg text-gray-600">
             Everything you need to make the most of your skill-sharing journey
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {features.map((feature, index) => (
             <FeatureCard key={index} {...feature} />
           ))}
         </div>
 
-        <div className="text-center mt-12">
-          <button className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl">
+        <div className="text-center mt-8 md:mt-12">
+          <button className="bg-blue-600 text-white px-6 md:px-8 py-2 md:py-3 rounded-full hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl text-sm md:text-base">
             Explore All Features
           </button>
         </div>

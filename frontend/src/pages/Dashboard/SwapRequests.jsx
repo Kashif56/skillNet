@@ -139,7 +139,7 @@ const SwapRequests = () => {
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-4">
               <img
-                src={`http://localhost:8000/${otherUser.profile_picture}`}
+                src={`http://localhost:8000${otherUser.profile_picture}`}
                 alt="Profile"
                 className="w-12 h-12 rounded-full object-cover border-2 border-gray-100"
               />
@@ -175,7 +175,7 @@ const SwapRequests = () => {
 
           <div className="flex flex-wrap items-center gap-3">
             <Link
-              to={`/dashboard/messages/${otherUser.username}`}
+              to={`/dashboard/chat/${otherUser.username}`}
               className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <FaCommentAlt className="w-4 h-4 mr-2" />

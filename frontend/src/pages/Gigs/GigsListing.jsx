@@ -124,6 +124,8 @@ const GigsListing = () => {
     setCurrentPage(1);
   };
 
+  
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}

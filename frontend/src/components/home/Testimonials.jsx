@@ -52,20 +52,20 @@ const Testimonials = () => {
   ];
 
   return (
-    <section className="py-20 px-40 bg-gradient-to-b from-white to-gray-50">
-      <div className="container mx-auto px-4">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+    <section className="py-12 md:py-20 px-4 md:px-8 lg:px-16 bg-gradient-to-b from-white to-gray-50">
+      <div className="container mx-auto">
+        <div className="text-center max-w-3xl mx-auto mb-12 md:mb-16">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
             What Our Community Says
           </h2>
-          <p className="text-gray-600 text-lg">
+          <p className="text-base md:text-lg text-gray-600">
             Join thousands of satisfied members who are already sharing and learning
           </p>
         </div>
         
         <Swiper
           modules={[Autoplay, Pagination]}
-          spaceBetween={30}
+          spaceBetween={20}
           slidesPerView={1}
           pagination={{ 
             clickable: true,
@@ -73,8 +73,9 @@ const Testimonials = () => {
           }}
           autoplay={{ delay: 5000 }}
           breakpoints={{
-            768: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
+            480: { slidesPerView: 1, spaceBetween: 20 },
+            768: { slidesPerView: 2, spaceBetween: 24 },
+            1024: { slidesPerView: 3, spaceBetween: 30 },
           }}
           className="pb-16"
         >

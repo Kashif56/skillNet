@@ -5,7 +5,7 @@ import { FaSpinner } from 'react-icons/fa';
 import { format } from 'date-fns';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-
+import welcome from '../../assets/welcome.svg';
 const ConversationList = ({ onSelectChat }) => {
   const { token } = useSelector((state) => state.auth);
   const [conversations, setConversations] = useState([]);
@@ -95,9 +95,9 @@ const WelcomeSection = () => {
   return (
     <div className="h-full flex flex-col items-center justify-center bg-gray-50 p-8">
       <img
-        src="https://via.placeholder.com/200"
+        src={welcome}
         alt="Welcome"
-        className="w-32 h-32 mb-6"
+        className="h-48 mb-6"
       />
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">
         Welcome to Messages

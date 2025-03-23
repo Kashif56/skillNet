@@ -212,7 +212,7 @@ const DashboardGigDetail = () => {
               <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                 <div className="relative pb-[56.25%]">
                   <img
-                    src={`http://localhost:8000/${gig.gigImage}`}
+                    src={`http://localhost:8000${gig.gigImage}`}
                     alt={gig.title}
                     className="absolute inset-0 w-full h-full object-cover"
                   />
@@ -231,7 +231,7 @@ const DashboardGigDetail = () => {
               <div className="bg-white rounded-2xl shadow-sm p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
                 <div className="flex flex-wrap gap-2">
-                  {gig.tags && gig.tags.length > 0 ? (
+                  {gig.tags && Array.isArray(gig.tags) && gig.tags.length > 0 ? (
                     gig.tags.map((tag, index) => (
                       <span
                         key={index}

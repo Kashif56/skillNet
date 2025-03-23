@@ -68,6 +68,7 @@ def get_conversations(request):
                     'firstName': other_profile.user.first_name,
                     'lastName': other_profile.user.last_name,
                     'profilePicture': other_profile.profile_picture.url if other_profile.profile_picture else None,
+                    'currentUserImg': current_user_profile.profile_picture.url if current_user_profile.profile_picture else None,
                     'lastMessage': msg.content,
                     'lastMessageTime': msg.createdAt.isoformat()
                 })

@@ -39,24 +39,24 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section className="py-20 px-40 bg-gray-50 relative overflow-hidden">
-      <div className="container mx-auto px-4">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+    <section className="py-12 md:py-20 px-4 md:px-8 lg:px-16 bg-gray-50 relative overflow-hidden">
+      <div className="container mx-auto">
+        <div className="text-center max-w-3xl mx-auto mb-12 md:mb-16">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
             How SkillNet Works
           </h2>
-          <p className="text-gray-600 text-lg">
+          <p className="text-base md:text-lg text-gray-600">
             Follow these simple steps to start your skill-sharing journey
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 relative">
           {steps.map((step, index) => (
             <React.Fragment key={index}>
               <Step {...step} number={index + 1} />
               {index < steps.length - 1 && (
                 <div className="hidden lg:block absolute top-1/2 left-1/4 transform -translate-y-1/2 w-full h-0.5 bg-blue-100 z-0" 
-                     style={{ left: `${(index + 1) * 25}%` }}>
+                     style={{ left: `${(index + 1) * 25}%`, display: window.innerWidth < 1024 ? 'none' : 'block' }}>
                   <div className="absolute right-0 -mt-1 w-3 h-3 rounded-full bg-blue-200"></div>
                 </div>
               )}

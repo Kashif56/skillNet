@@ -69,7 +69,7 @@ const ConversationList = ({ onSelectChat, activeChat }) => {
             >
               <div className="flex items-center space-x-3">
                 <img
-                  src='https://thelightcommittee.com/wp-content/uploads/elementor/thumbs/women-linkedin-headshot-los-angeles-1-q71sclhob153lpmbqr2eydwgqhf7girral69pesikw.jpg'
+                  src={`http://localhost:8000${chat.profilePicture}`}
                   alt={chat.username}
                   className="w-12 h-12 rounded-full object-cover"
                 />
@@ -101,6 +101,9 @@ const ChatWindow = ({ username }) => {
   const messagesEndRef = useRef(null);
   const wsRef = useRef(null);
   const navigate = useNavigate();
+  
+  // Extract user's profile picture URL
+  const currentUserImg = user?.profilePicture || '/default-profile.jpg';
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -135,6 +138,7 @@ const ChatWindow = ({ username }) => {
         const currentChat = response.data.find(chat => chat.username === username);
         if (currentChat) {
           setChatUser(currentChat);
+          console.log("currentChat", currentChat);
         }
       }
     } catch (error) {
@@ -262,7 +266,7 @@ const ChatWindow = ({ username }) => {
             <FaArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
           <img
-            src='https://thelightcommittee.com/wp-content/uploads/elementor/thumbs/women-linkedin-headshot-los-angeles-1-q71sclhob153lpmbqr2eydwgqhf7girral69pesikw.jpg'
+            src={`http://localhost:8000${chatUser?.profilePicture}`}
             alt="Profile"
             className="w-10 h-10 rounded-full object-cover"
           />
@@ -282,10 +286,11 @@ const ChatWindow = ({ username }) => {
             <div key={index}>
               <div className={`flex items-end gap-2 ${msg.sender === user.username ? 'flex-row-reverse' : 'flex-row'}`}>
                 <img
-                  src='https://thelightcommittee.com/wp-content/uploads/elementor/thumbs/women-linkedin-headshot-los-angeles-1-q71sclhob153lpmbqr2eydwgqhf7girral69pesikw.jpg'
+                  src={`http://localhost:8000${msg.sender === user.username ? chatUser?.currentUserImg : chatUser?.profilePicture}`}
                   alt={msg.sender === user.username ? 'Your profile' : 'Profile'}
                   className="h-8 w-8 rounded-full object-cover flex-shrink-0"
                 />
+               
                 <div className="flex flex-col">
                   <div
                     className={`px-4 py-2 max-w-sm ${

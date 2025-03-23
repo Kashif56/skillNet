@@ -57,8 +57,8 @@ const FeaturedSkills = () => {
   ];
 
   return (
-    <section className="py-16 px-40 bg-gray-50">
-      <div className="container mx-auto px-4">
+    <section className="py-12 md:py-16 px-4 md:px-8 lg:px-16 bg-gray-50">
+      <div className="container mx-auto">
         <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
           Featured Skills
         </h2>
@@ -70,6 +70,7 @@ const FeaturedSkills = () => {
           pagination={{ clickable: true }}
           autoplay={{ delay: 3000 }}
           breakpoints={{
+            480: { slidesPerView: 1 },
             640: { slidesPerView: 2 },
             1024: { slidesPerView: 3 },
           }}
