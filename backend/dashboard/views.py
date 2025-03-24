@@ -38,16 +38,21 @@ def dashboard_stats(request):
             (Q(requestor=profile) | Q(responder=profile)),
             status='accepted'
         ).count()
+
+        # Get completed swaps from database
+        completed_swaps = SwapRequest.objects.filter(
+            (Q(requestor=profile) | Q(responder=profile)),
+            status='completed'
+        ).count()
         
         # Calculate trend (for demo, return a random positive/negative value)
         active_swaps_trend = random.randint(-15, 20)
+        completed_swaps_trend = random.randint(-10, 15)
         
         # Get user rating from profile
         rating = profile.rating
         
-        # XP points (since your model doesn't have xp_points, we'll use a mock value)
-        xp_points = random.randint(1000, 5000)
-        xp_trend = random.randint(-10, 25)
+   
         
         return Response({
             'stats': {
@@ -58,9 +63,9 @@ def dashboard_stats(request):
                 'rating': {
                     'value': round(rating, 1)
                 },
-                'xp_points': {
-                    'value': xp_points,
-                    'trend': xp_trend
+                'completed_swaps': {
+                    'value': completed_swaps,
+                    'trend': completed_swaps_trend
                 }
             }
         })
@@ -181,6 +186,7 @@ def activity_feed(request):
                     'time': swap.updatedAt,
                     'details': f'You swapped skills through gig: {swap.gig.title}',
                     'swap_id': swap.id,
+                    'swapId': swap.swapId,
                     'gig_id': swap.gig.id,
                     'other_user': other_user
                 })
@@ -194,6 +200,7 @@ def activity_feed(request):
                     'time': swap.updatedAt,
                     'details': f'You are now actively swapping skills for gig: {swap.gig.title}',
                     'swap_id': swap.id,
+                    'swapId': swap.swapId,
                     'gig_id': swap.gig.id,
                     'other_user': other_user
                 })
@@ -206,6 +213,7 @@ def activity_feed(request):
                     'time': request.createdAt,
                     'details': f'{request.requestor.user.username} wants to swap skills with you for: {request.gig.title}',
                     'swap_id': request.id,
+                    'swapId': request.swapId,
                     'gig_id': request.gig.id,
                     'other_user': request.requestor.user.username
                 })
@@ -218,6 +226,7 @@ def activity_feed(request):
                     'time': request.createdAt,
                     'details': f'You requested a skill swap with {request.responder.user.username} for: {request.gig.title}',
                     'swap_id': request.id,
+                    'swapId': request.swapId,
                     'gig_id': request.gig.id,
                     'other_user': request.responder.user.username
                 })
@@ -231,6 +240,7 @@ def activity_feed(request):
                         'time': request.updatedAt,
                         'details': f'{request.responder.user.username} rejected your swap request for: {request.gig.title}',
                         'swap_id': request.id,
+                        'swapId': request.swapId,
                         'gig_id': request.gig.id,
                         'other_user': request.responder.user.username
                     })
@@ -241,6 +251,7 @@ def activity_feed(request):
                         'time': request.updatedAt,
                         'details': f'You rejected a swap request from {request.requestor.user.username} for: {request.gig.title}',
                         'swap_id': request.id,
+                        'swapId': request.swapId,
                         'gig_id': request.gig.id,
                         'other_user': request.requestor.user.username
                     })
@@ -344,6 +355,7 @@ def swap_status(request):
                 other_user = swap.requestor.user.username if swap.responder == profile else swap.responder.user.username
                 active_swaps.append({
                     'id': swap.id,
+                    'swapId': swap.swapId,
                     'status': 'accepted',
                     'title': f'Swap with {other_user}',
                     'details': f'Active skill swap for: {swap.gig.title}',
@@ -357,6 +369,7 @@ def swap_status(request):
                 other_user = swap.requestor.user.username if swap.responder == profile else swap.responder.user.username
                 completed_swaps.append({
                     'id': swap.id,
+                    'swapId': swap.swapId,
                     'status': 'completed',
                     'title': f'Swap with {other_user}',
                     'details': f'Completed skill swap for: {swap.gig.title}',

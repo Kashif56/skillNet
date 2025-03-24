@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   FaExchangeAlt, FaStar, FaClock, FaTrophy,
@@ -107,8 +107,12 @@ const SwapCard = ({ swap, requestType = null }) => {
           {Icon}
         </div>
         <div className="flex-1">
-          <h3 className="font-medium text-gray-800 text-base">{swap.title}</h3>
-          <span className="text-xs text-gray-500">{formatTime(swap.date)}</span>
+          <h3 className="font-medium text-gray-800 text-base">
+            {swap.title}
+          </h3>
+          <span className="text-xs text-gray-500">
+            {formatTime(swap.date)}
+          </span>
         </div>
         <span className={`text-xs font-medium px-3 py-1 rounded-full ${statusLabelColor}`}>
           {statusLabel}
@@ -116,9 +120,9 @@ const SwapCard = ({ swap, requestType = null }) => {
       </div>
       <p className="text-sm text-gray-600 mb-3 line-clamp-2">{swap.details}</p>
       <div className="flex justify-end">
-        <button className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1">
+        <Link to={`/dashboard/swap-delivery/${swap.swapId}`} className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1">
           View Details <FaArrowRight className="w-3 h-3" />
-        </button>
+        </Link>
       </div>
     </motion.div>
   );
@@ -175,7 +179,8 @@ const DashboardHome = () => {
             stats: {
               active_swaps: { value: 5, trend: 10 },
               rating: { value: 4.5 },
-              xp_points: { value: 1250, trend: 5 }
+              xp_points: { value: 1250, trend: 5 },
+              completed_swaps: { value: 3, trend: 8 }
             }
           };
         }
@@ -217,6 +222,7 @@ const DashboardHome = () => {
               if (activity.type === 'request_sent') {
                 sent.push({
                   id: activity.swap_id || Math.random().toString(36).substr(2, 9),
+                  swapId: activity.swapId || null,
                   status: 'pending',
                   title: activity.title,
                   details: activity.details,
@@ -227,6 +233,7 @@ const DashboardHome = () => {
               } else if (activity.type === 'new_request') {
                 received.push({
                   id: activity.swap_id || Math.random().toString(36).substr(2, 9),
+                  swapId: activity.swapId || null,
                   status: 'pending',
                   title: activity.title,
                   details: activity.details,
@@ -264,6 +271,7 @@ const DashboardHome = () => {
                   if (activity.type === 'swap_accepted') {
                     active.push({
                       id: activity.swap_id || Math.random().toString(36).substr(2, 9),
+                      swapId: activity.swapId || null,
                       status: 'accepted',
                       title: activity.title,
                       details: activity.details,
@@ -274,6 +282,7 @@ const DashboardHome = () => {
                   } else if (activity.type === 'swap_completed') {
                     completed.push({
                       id: activity.swap_id || Math.random().toString(36).substr(2, 9),
+                      swapId: activity.swapId || null,
                       status: 'completed',
                       title: activity.title,
                       details: activity.details,
@@ -314,8 +323,9 @@ const DashboardHome = () => {
           },
           {
             title: 'Completed Swaps',
-            value: String(completedSwaps.length || 0),
+            value: String(completedSwaps.length || statsData.stats.completed_swaps.value || 0),
             icon: FaCalendarCheck,
+            trend: statsData.stats.completed_swaps.trend || 0,
             color: 'green'
           },
           {
