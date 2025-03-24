@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Gig, SwapRequest
+from .models import Gig, SwapRequest, SwapDelivery, DeliveryComment
 
 # Register your models here.
 
@@ -14,3 +14,7 @@ class SwapRequestAdmin(admin.ModelAdmin):
     list_display = ('requestor', 'responder', 'gig', 'status', 'createdAt')
     search_fields = ('requestor__username', 'responder__username', 'message')
     list_filter = ('status', 'createdAt')
+
+
+admin.site.register(SwapDelivery)
+admin.site.register(DeliveryComment)

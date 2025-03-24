@@ -189,3 +189,81 @@ export const deleteGig = async (gigId) => {
         };
     }
 };
+
+// Track impression when a gig is viewed
+export const trackImpression = async (gigId) => {
+    if (!gigId) {
+        console.error('Cannot track impression: No gigId provided');
+        return Promise.reject(new Error('No gigId provided'));
+    }
+
+    try {
+        // Check if we've tracked this gig's impression recently
+        const impressionKey = `impression_${gigId}`;
+        const lastImpressionTime = localStorage.getItem(impressionKey);
+        const currentTime = new Date().getTime();
+        
+        // If we have a stored time for this gig
+        if (lastImpressionTime) {
+            const timeSinceLastImpression = currentTime - parseInt(lastImpressionTime);
+            const tenMinutesInMs = 10 * 60 * 1000;
+            
+            // If it's been less than 10 minutes, don't track
+            if (timeSinceLastImpression < tenMinutesInMs) {
+                console.log(`Skipping impression for gig ${gigId}: within cooldown period (${Math.round(timeSinceLastImpression / 1000 / 60)} minutes since last impression)`);
+                return Promise.resolve({ 
+                    status: 'skipped', 
+                    message: 'Impression not tracked: cooldown period active'
+                });
+            }
+        }
+        
+        // If we reach here, either there's no stored time or it's been more than 10 minutes
+        // Track the impression
+        const response = await gigsApi.post('/track-impression/', { gigId });
+        
+        // Store the current time as the last impression time for this gig
+        localStorage.setItem(impressionKey, currentTime.toString());
+        
+        return response.data;
+    } catch (error) {
+        console.error('Error tracking impression:', error);
+        // Return a resolved promise with error status to prevent UI disruption
+        return Promise.resolve({ 
+            status: 'error', 
+            message: 'Failed to track impression',
+            error: error.message
+        });
+    }
+};
+
+// Track click when a gig is clicked
+export const trackClick = async (gigId) => {
+    if (!gigId) {
+        console.error('Cannot track click: No gigId provided');
+        return Promise.reject(new Error('No gigId provided'));
+    }
+
+    try {
+        const response = await gigsApi.post('/track-click/', { gigId });
+        return response.data;
+    } catch (error) {
+        console.error('Error tracking click:', error);
+        // Return a resolved promise with error status to prevent UI disruption
+        return Promise.resolve({ 
+            status: 'error', 
+            message: 'Failed to track click',
+            error: error.message
+        });
+    }
+};
+
+// Send swap request and track it
+export const sendSwapRequest = async (data) => {
+    try {
+        const response = await gigsApi.post('/send-swap-request/', data);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || error.message;
+    }
+};

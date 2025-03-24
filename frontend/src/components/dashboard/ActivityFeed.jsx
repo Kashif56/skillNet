@@ -75,22 +75,22 @@ const ActivityItem = ({ activity }) => {
   };
 
   return (
-    <motion.div 
+      <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className="flex items-start space-x-3 pb-5"
     >
       <div className={`p-2 rounded-full ${bgColor} flex-shrink-0 mt-1`}>
         <span className={`${color}`}>{icon}</span>
-      </div>
+              </div>
       <div className="flex-1">
         <h3 className="font-medium text-sm text-gray-800">{activity.title}</h3>
         <p className="text-xs text-gray-600 mt-1">{activity.details}</p>
         {getActionButton(activity.type)}
         <span className="text-xs text-gray-400 block mt-1">{formatTime(activity.time)}</span>
-      </div>
-    </motion.div>
-  );
+              </div>
+            </motion.div>
+          );
 };
 
 const ActivityFeed = ({ activities: propActivities }) => {

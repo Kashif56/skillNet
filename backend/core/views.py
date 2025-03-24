@@ -14,7 +14,10 @@ from gigs.serializer import GigSerializer, SwapRequestSerializer
 @permission_classes([AllowAny])
 def allGigs(request):
     try:
-        gigs = Gig.objects.all()
+        if request.user.is_authenticated:
+            gigs = Gig.objects.all().exclude(user=request.user)
+        else:
+            gigs = Gig.objects.all()
         serializer = GigSerializer(gigs, many=True)
         return Response(serializer.data)
     except Exception as e:
@@ -51,6 +54,8 @@ def sendSwapRequest(request):
         gigId = data.get('gigId')
         message = data.get('message')
         gig = Gig.objects.get(gigId=gigId)
+        gig.swaps += 1
+        gig.save()
         if gig.isActive == False:
             return Response({
                 'status': 'error',

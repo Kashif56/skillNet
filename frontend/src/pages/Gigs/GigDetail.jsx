@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FaStar, FaUserCircle, FaCalendar, FaClock, FaMapMarkerAlt } from 'react-icons/fa';
 import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
-import { getGigDetail, checkSwapRequest, sendSwapRequest } from '../../services/core';
+import { getGigDetail, checkSwapRequest } from '../../services/core';
+import { sendSwapRequest } from '../../services/core';
+import { trackClick } from '../../services/gigs';
 import SwapRequestModal from '../../components/gigs/SwapRequestModal';
 import { toast } from 'react-toastify';
 
@@ -29,50 +31,66 @@ const GigDetail = () => {
         setLoading(true);
         const response = await getGigDetail(gigId);
         
-        setGig(response.data);
-        
-        // Only check swap request status if user is authenticated
-        if (isAuthenticated) {
-          try {
-            const swapStatus = await checkSwapRequest(gigId);
-            if(swapStatus.status === 'success') {
-              setSwapRequestStatus(swapStatus.data);
-              
+        if (response.status === 'success') {
+          setGig(response.data);
+          
+          // Note: We've removed impression tracking here since we now track
+          // impressions in the GigsListing component based on viewport visibility
+          
+          // If user is authenticated, check swap request status
+          if (isAuthenticated) {
+            try {
+              const swapStatusResponse = await checkSwapRequest(gigId);
+              setSwapRequestStatus(swapStatusResponse);
+            } catch (err) {
+              console.error("Error checking swap request status:", err);
             }
-          } catch (err) {
-            console.error('Error checking swap request status:', err);
-            // Don't set main error state, just log the error
           }
+        } else {
+          setError('Failed to load gig details');
         }
       } catch (err) {
-        setError(err.message || 'Failed to load gig details');
         console.error('Error fetching gig details:', err);
+        setError('Failed to load gig details. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchGigDetails();
+    if (gigId) {
+      fetchGigDetails();
+    }
   }, [gigId, isAuthenticated]);
 
   const handleSwapRequest = async (formData) => {
     if (!isAuthenticated) {
-      alert('Please log in to send a swap request');
+      toast.error('Please login to send a swap request');
       return;
     }
 
     try {
       setSendingRequest(true);
-      await sendSwapRequest({ 
-        gigId,
-        message: formData.message 
+      // Track click for swap request
+      await trackClick(gigId);
+      
+      const response = await sendSwapRequest({
+        gigId: gigId,
+        message: formData.message
       });
-      setSwapRequestStatus({ status: 'pending' });
-      toast.success('Swap request sent successfully! The gig owner will review your request.');
-      setIsModalOpen(false);
+
+      if (response.status === 'success') {
+        toast.success('Swap request sent successfully!');
+        setIsModalOpen(false);
+        setSwapRequestStatus({
+          hasRequested: true,
+          status: 'pending'
+        });
+      } else {
+        toast.error(response.message || 'Failed to send swap request');
+      }
     } catch (err) {
       console.error('Error sending swap request:', err);
-      toast.error('Failed to send swap request. Please try again.');
+      toast.error(err.message || 'Failed to send swap request. Please try again.');
     } finally {
       setSendingRequest(false);
     }

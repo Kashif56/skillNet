@@ -132,6 +132,7 @@ const SwapRequests = () => {
     const otherUser = type === 'sent' ? request.responder : request.requestor;
     const showActions = type === 'received' && request.status === 'pending';
     const showWithdraw = type === 'sent' && request.status === 'pending';
+    const showDelivery = request.status === 'accepted';
     
     return (
       <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
@@ -181,6 +182,16 @@ const SwapRequests = () => {
               <FaCommentAlt className="w-4 h-4 mr-2" />
               Chat with {otherUser.user_first_name}
             </Link>
+
+            {showDelivery && (
+              <Link
+                to={`/dashboard/swap-delivery/${request.swapId}`}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-green-600 bg-green-50 rounded-md hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              >
+                <FaExchangeAlt className="w-4 h-4 mr-2" />
+                Go to Delivery
+              </Link>
+            )}
 
             {showActions && (
               <>

@@ -197,3 +197,76 @@ export const withdrawSwapRequest = async (swapId) => {
         throw error.response?.data || error.message;
     }
 };
+
+// Get swap delivery details
+export const getSwapDelivery = async (swapId) => {
+    try {
+        const response = await gigsApi.get(`/gigs/swap-delivery/${swapId}/`);
+        return response.data;
+    } catch (error) {
+        if (error.message === 'Authentication required') {
+            throw new Error('Please log in to view delivery details');
+        }
+        throw error.response?.data || error.message;
+    }
+};
+
+// Update swap delivery (add comment, upload file, mark as completed)
+export const updateSwapDelivery = async (swapId, action, data = {}) => {
+    try {
+        // For file uploads, we need to use FormData
+        const isFileUpload = action === 'upload_deliverable' && data.file;
+        let requestData;
+        
+        if (isFileUpload) {
+            requestData = new FormData();
+            requestData.append('action', action);
+            requestData.append('swapId', swapId);
+            requestData.append('file', data.file);
+            
+            // Add comment if provided
+            if (data.comment) {
+                requestData.append('comment', data.comment);
+            }
+        } else {
+            requestData = {
+                action: action,
+                swapId: swapId,
+                ...data
+            };
+        }
+        
+        // Configure headers for FormData vs JSON
+        const config = isFileUpload ? 
+            { headers: { 'Content-Type': 'multipart/form-data' } } : 
+            {};
+            
+        const response = await gigsApi.post(`/gigs/swap-delivery/${swapId}/`, requestData, config);
+        
+        if (response.data.status === 'error') {
+            throw new Error(response.data.message || `Failed to ${action.replace('_', ' ')}`);
+        }
+        
+        return response.data;
+    } catch (error) {
+        console.error(`Error in updateSwapDelivery (${action}):`, error);
+        
+        if (error.message === 'Authentication required') {
+            throw new Error('Please log in to update delivery details');
+        }
+        
+        if (error.response?.data?.message) {
+            throw new Error(error.response.data.message);
+        }
+        
+        if (action === 'mark_completed') {
+            throw new Error('Failed to accept the deliverable. Please try again.');
+        } else if (action === 'upload_deliverable') {
+            throw new Error('Failed to upload your deliverable. Please try again.');
+        } else if (action === 'add_comment') {
+            throw new Error('Failed to add your comment. Please try again.');
+        }
+        
+        throw error.response?.data || error.message || 'An unknown error occurred';
+    }
+};

@@ -8,6 +8,8 @@ import {
   FaInbox, FaPaperPlane
 } from 'react-icons/fa';
 import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
+import { BiSolidPlaneAlt, BiSolidPlaneLand } from 'react-icons/bi';
 
 import Sidebar from '../../components/dashboard/Sidebar';
 import DashboardNavbar from '../../components/dashboard/DashboardNavbar';
@@ -16,10 +18,7 @@ import ActivityFeed from '../../components/dashboard/ActivityFeed';
 import { getDashboardStats, getChartData, getActivityFeed, getSwapStatus } from '../../services/dashboard';
 
 // Import Dashboard Pages
-import Schedule from './Schedule';
 import Profile from './Profile';
-import Analytics from './Analytics';
-import Leaderboards from './Leaderboards';
 import Settings from './Settings';
 import Gigs from './Gigs';
 import CreateGig from './CreateGig';
@@ -28,6 +27,7 @@ import EditGig from './EditGig';
 import SwapRequests from './SwapRequests';
 import Conversations from './Conversations';
 import Chat from './Chat';
+import SwapDelivery from './SwapDelivery';
 
 // Swap Card Component
 const SwapCard = ({ swap, requestType = null }) => {
@@ -553,9 +553,6 @@ const Dashboard = () => {
         <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-64'} overflow-y-auto`}>
           <Routes>
             <Route index element={<DashboardHome />} />
-            <Route path="schedule" element={<Schedule />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="leaderboards" element={<Leaderboards />} />
             <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<Settings />} />
             <Route path="gigs" element={<Gigs />} />
@@ -563,6 +560,7 @@ const Dashboard = () => {
             <Route path="gigs/:gigId" element={<GigDetail />} />
             <Route path="gigs/:gigId/edit" element={<EditGig />} />
             <Route path="swap-requests" element={<SwapRequests />} />
+            <Route path="swap-delivery/:swapId" element={<SwapDelivery />} />
             <Route path="conversations/" element={<Conversations />} />
             <Route path="chat/:username" element={<Chat />} />
           </Routes>

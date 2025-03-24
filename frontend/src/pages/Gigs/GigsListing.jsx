@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import GigCard from '../../components/gigs/GigCard';
 import Filters from '../../components/gigs/Filters';
 import { getAllGigs } from '../../services/core';
+import { trackImpression } from '../../services/gigs';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -14,6 +15,10 @@ const GigsListing = () => {
   const [gigs, setGigs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // Track which gigs have already had impressions recorded
+  const [trackedImpressions, setTrackedImpressions] = useState({});
+  // Refs for observed elements
+  const observerRefs = useRef({});
 
   // Get search query from URL
   const searchQuery = searchParams.get('search') || '';
@@ -24,11 +29,21 @@ const GigsListing = () => {
       try {
         setLoading(true);
         const response = await getAllGigs();
-        setGigs(response);
-        setError(null);
+        
+        // Handle response with proper structure validation
+        if (response && response.status === 'success' && Array.isArray(response.data)) {
+          setGigs(response.data);
+        } else if (Array.isArray(response)) {
+          setGigs(response);
+        } else {
+          console.error('Unexpected API response format:', response);
+          setGigs([]);
+          setError('Failed to load gigs: Unexpected data format');
+        }
       } catch (err) {
         setError('Failed to load gigs. Please try again later.');
         console.error('Error fetching gigs:', err);
+        setGigs([]);
       } finally {
         setLoading(false);
       }
@@ -56,6 +71,81 @@ const GigsListing = () => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentGigs = filteredGigs.slice(startIndex, endIndex);
+
+  // Clean up observer refs when component unmounts
+  useEffect(() => {
+    return () => {
+      observerRefs.current = {};
+    };
+  }, []);
+
+  // Set up intersection observer for impression tracking
+  useEffect(() => {
+    // Skip if there are no gigs or page is loading
+    if (loading || !currentGigs || !currentGigs.length) return;
+
+    let observer;
+    try {
+      // Create a new IntersectionObserver instance
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const gigId = entry.target.dataset.gigId;
+              
+              // Only track impression if we haven't already for this gig in this session
+              if (gigId && !trackedImpressions[gigId]) {
+                // Track the impression
+                trackImpression(gigId)
+                  .then((result) => {
+                    // Handle the result based on status
+                    if (result.status === 'success' || result.status === 'skipped') {
+                      // Mark the impression as tracked to prevent future attempts
+                      // We mark it as tracked even if skipped due to cooldown
+                      setTrackedImpressions(prev => ({
+                        ...prev,
+                        [gigId]: true
+                      }));
+                      
+                      // Log the response if it was skipped
+                      if (result.status === 'skipped') {
+                        console.info(`Impression for gig ${gigId} skipped: ${result.message}`);
+                      }
+                    }
+                  })
+                  .catch(err => {
+                    console.error(`Error tracking impression for gig ${gigId}:`, err);
+                  });
+                
+                // We only need to track once, so unobserve after first visibility
+                observer.unobserve(entry.target);
+              }
+            }
+          });
+        },
+        {
+          threshold: 0.5, // Element is considered visible when 50% is in viewport
+          rootMargin: '0px' // No margin
+        }
+      );
+
+      // Start observing each gig card
+      currentGigs.forEach(gig => {
+        if (gig && gig.gigId && observerRefs.current[gig.gigId] && !trackedImpressions[gig.gigId]) {
+          observer.observe(observerRefs.current[gig.gigId]);
+        }
+      });
+    } catch (error) {
+      console.error("Error setting up IntersectionObserver:", error);
+    }
+
+    // Cleanup function to disconnect observer when component unmounts
+    return () => {
+      if (observer) {
+        observer.disconnect();
+      }
+    };
+  }, [currentGigs, loading, trackedImpressions]);
 
   // Generate page numbers array
   const getPageNumbers = () => {
@@ -124,7 +214,20 @@ const GigsListing = () => {
     setCurrentPage(1);
   };
 
-  
+  // Function to set ref for each gig card
+  const setGigRef = (gigId, element) => {
+    if (!gigId) {
+      console.warn("Attempted to set ref for gig with undefined gigId");
+      return;
+    }
+    
+    if (element) {
+      observerRefs.current[gigId] = element;
+    } else if (observerRefs.current[gigId]) {
+      // Clean up reference if element is null (component unmounting)
+      delete observerRefs.current[gigId];
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -178,9 +281,16 @@ const GigsListing = () => {
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {currentGigs.map((gig) => (
-                <Link key={gig.gigId} to={`/gigs/${gig.gigId}`} className="transform hover:scale-[1.02] transition-transform">
-                  <GigCard gig={gig} />
-                </Link>
+                <div
+                  key={gig.gigId}
+                  ref={(el) => setGigRef(gig.gigId, el)}
+                  data-gig-id={gig.gigId}
+                  className="transform hover:scale-[1.02] transition-transform"
+                >
+                  <Link to={`/gigs/${gig.gigId}`}>
+                    <GigCard gig={gig} />
+                  </Link>
+                </div>
               ))}
             </div>
 

@@ -89,3 +89,74 @@ class SwapRequest(models.Model):
             self.swapId = self.generateSwapId()
 
         return super().save(*args, **kwargs)
+
+
+class SwapDelivery(models.Model):
+    """
+    Model to track deliverables for both users in a swap request.
+    Each user (requestor and responder) can upload files and mark their delivery as complete.
+    The swap is considered complete when both users have marked their deliveries as complete.
+    """
+    DELIVERY_STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('delivered', 'Delivered'),
+        ('accepted', 'Accepted'),
+    )
+    
+    swap_request = models.OneToOneField(SwapRequest, on_delete=models.CASCADE, related_name='delivery')
+    delivery_id = models.CharField(max_length=200, unique=True, null=True, blank=True)
+    
+    # Requestor delivery fields
+    requestor_file = models.FileField(upload_to='swap_deliveries/requestor/', blank=True, null=True)
+    requestor_comment = models.TextField(blank=True, null=True)
+    requestor_status = models.CharField(max_length=20, choices=DELIVERY_STATUS_CHOICES, default='pending')
+    requestor_delivered_at = models.DateTimeField(blank=True, null=True)
+    requestor_accepted_at = models.DateTimeField(blank=True, null=True)
+    
+    # Responder delivery fields
+    responder_file = models.FileField(upload_to='swap_deliveries/responder/', blank=True, null=True)
+    responder_comment = models.TextField(blank=True, null=True)
+    responder_status = models.CharField(max_length=20, choices=DELIVERY_STATUS_CHOICES, default='pending')
+    responder_delivered_at = models.DateTimeField(blank=True, null=True)
+    responder_accepted_at = models.DateTimeField(blank=True, null=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Delivery for {self.swap_request.swapId}"
+    
+    def generate_delivery_id(self):
+        initial = f"delivery-{self.swap_request.swapId}-"
+        for i in range(5):
+            initial += str(random.randint(0, 9))
+        return initial
+    
+    def save(self, *args, **kwargs):
+        if not self.delivery_id:
+            self.delivery_id = self.generate_delivery_id()
+        
+        # Check if both requestor and responder have accepted deliveries and update swap status
+        if self.requestor_status == 'accepted' and self.responder_status == 'accepted':
+            self.swap_request.status = 'completed'
+            self.swap_request.save()
+            
+        return super().save(*args, **kwargs)
+
+
+class DeliveryComment(models.Model):
+    """
+    Model for comments related to swap deliveries.
+    Used for communication between users about their deliverables.
+    """
+    delivery = models.ForeignKey(SwapDelivery, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    message = models.TextField()
+    file_attachment = models.FileField(upload_to='swap_comments/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['created_at']
+    
+    def __str__(self):
+        return f"Comment by {self.user.user.username} on {self.created_at}"
