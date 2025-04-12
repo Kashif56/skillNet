@@ -58,7 +58,7 @@ INSTALLED_APPS = [
     'core',
     'chats',
     'gigs',
-    'dashboard'
+    'dashboard',
     # Add your local apps here
 ]
 

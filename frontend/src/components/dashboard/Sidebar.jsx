@@ -14,7 +14,7 @@ import {
   FaQuestionCircle,
   FaBriefcase,
   FaExchangeAlt,
-  FaEnvelope
+  FaEnvelope,
 } from 'react-icons/fa';
 
 const Sidebar = ({ isCollapsed, onToggle }) => {

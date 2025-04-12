@@ -4,7 +4,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FaPaperPlane, FaSpinner, FaArrowLeft } from 'react-icons/fa';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-
 import { format } from 'date-fns';
 
 const ConversationList = ({ onSelectChat, activeChat }) => {
@@ -270,12 +269,13 @@ const ChatWindow = ({ username }) => {
             alt="Profile"
             className="w-10 h-10 rounded-full object-cover"
           />
-          <div>
+          <div className="flex-1">
             <h2 className="text-lg font-semibold text-gray-900">
               {chatUser ? `${chatUser.firstName} ${chatUser.lastName}` : username}
             </h2>
             <span className="text-sm font-normal text-gray-500">@{username}</span>
           </div>
+         
         </div>
       </div>
 
@@ -286,7 +286,10 @@ const ChatWindow = ({ username }) => {
             <div key={index}>
               <div className={`flex items-end gap-2 ${msg.sender === user.username ? 'flex-row-reverse' : 'flex-row'}`}>
                 <img
-                  src={`http://localhost:8000${msg.sender === user.username ? chatUser?.currentUserImg : chatUser?.profilePicture}`}
+                  src={msg.sender === user.username 
+                    ? (user.profilePicture ? `http://localhost:8000${user.profilePicture}` : '/default-profile.jpg')
+                    : (chatUser?.profilePicture ? `http://localhost:8000${chatUser.profilePicture}` : '/default-profile.jpg')
+                  }
                   alt={msg.sender === user.username ? 'Your profile' : 'Profile'}
                   className="h-8 w-8 rounded-full object-cover flex-shrink-0"
                 />

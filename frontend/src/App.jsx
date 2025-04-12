@@ -11,12 +11,18 @@ import { AuthRoute, PrivateRoute } from './components/auth/ProtectedRoute';
 import { useSelector } from 'react-redux';
 import Conversations from './pages/Dashboard/Conversations';
 import Chat from './pages/Dashboard/Chat';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const { isAuthenticated } = useSelector((state) => state.auth);
 
   return (
     <Router>
+      
+      {/* Toast container for notifications */}
+      <ToastContainer />
+      
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<Layout><Home /></Layout>} />
